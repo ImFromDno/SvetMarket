@@ -437,23 +437,8 @@
 </div>
 
 <script>
-  // Ссылка на твою таблицу уже вшита
+  // Твоя ссылка на таблицу
   const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2NjokEEfkRUGD3QtUyDJM0jK_QCY19GH18Rl8UAyjo280P79x5BT1HqNzsZ5m5HxEI_xkMy4GQrNn/pub?output=csv";
-
-  const DEMO_ROWS = [
-    {
-      group_id: "spo",
-      category: "освещение",
-      subcategory: "линейный светильник",
-      name: "СПП",
-      variant: "45Вт",
-      price: "300",
-      stock: "в наличии",
-      image: "https://placehold.co/400x300/f8fafc/1e293b?text=СПП+45Вт",
-      specs: "мощность 45вт; ip20; 120см; яркий свет",
-      description: "Надежный линейный светодиодный светильник."
-    }
-  ];
 
   let groupedProducts = [];
   let currentSelection = "ALL";
@@ -480,11 +465,19 @@
     }
     if (val || current.length) { current.push(val.trim()); if (current.some(c => c !== "")) rows.push(current); }
     
-    const headers = rows[0].map(h => h.toLowerCase().trim());
+    if (rows.length === 0) return [];
+
+    // Читаем заголовки и приводим к нижнему регистру
+    const headers = rows[0].map(h => h.toLowerCase().trim().replace(/^"(.*)"$/, '$1'));
     
     return rows.slice(1).map(row => {
       const obj = {};
-      headers.forEach((h, idx) => obj[h] = row[idx] || "");
+      headers.forEach((h, idx) => {
+        let val = row[idx] || "";
+        // Убираем возможные кавычки по краям ячеек
+        val = val.replace(/^"(.*)"$/, '$1').trim();
+        obj[h] = val;
+      });
       return obj;
     });
   }
@@ -507,7 +500,7 @@
         variant: row.variant || "",
         price: row.price || "",
         stock: row.stock || "В наличии",
-        image: row.image || "https://placehold.co/400x300/f8fafc/94a3b8?text=Нет+фото",
+        image: row.image || "",
         specs: row.specs || "",
         description: row.description || ""
       });
@@ -591,12 +584,13 @@
     grid.innerHTML = filtered.map(item => {
       const v = item.variants[item.selectedIndex];
       const hasVariants = item.variants.length > 1 || (item.variants.length === 1 && v.variant);
+      const imgSrc = v.image ? v.image : 'https://placehold.co/400x300/f8fafc/94a3b8?text=Нет+фото';
 
       return `
         <div class="card" data-id="${item.id}">
           <div class="card-img-wrap" onclick="openModal('${item.id}')">
             <span class="badge-sub">${item.subcategory}</span>
-            <img src="${v.image || 'https://placehold.co/400x300/f8fafc/94a3b8?text=Нет+фото'}" alt="${item.name}" loading="lazy" onerror="this.src='https://placehold.co/400x300/f8fafc/94a3b8?text=Нет+фото'" />
+            <img src="${imgSrc}" alt="${item.name}" loading="lazy" onerror="this.src='https://placehold.co/400x300/f8fafc/94a3b8?text=Нет+фото'" />
           </div>
           <div class="card-body">
             <div class="title" onclick="openModal('${item.id}')">${item.name} ${v.variant ? `(${v.variant})` : ""}</div>
@@ -638,11 +632,12 @@
     if (!item) return;
     const v = item.variants[item.selectedIndex];
     const specsArr = v.specs ? v.specs.split(";").map(s => s.trim()).filter(Boolean) : [];
+    const imgSrc = v.image ? v.image : 'https://placehold.co/400x300/f8fafc/94a3b8?text=Нет+фото';
 
     document.getElementById("modalContent").innerHTML = `
       <div class="modal-grid">
         <div>
-          <img class="modal-img" src="${v.image || 'https://placehold.co/400x300/f8fafc/94a3b8?text=Нет+фото'}" alt="${item.name}" onerror="this.src='https://placehold.co/400x300/f8fafc/94a3b8?text=Нет+фото'" />
+          <img class="modal-img" src="${imgSrc}" alt="${item.name}" onerror="this.src='https://placehold.co/400x300/f8fafc/94a3b8?text=Нет+фото'" />
         </div>
         <div>
           <div style="font-size:12px; color:var(--muted); margin-bottom:4px;">${item.category} / ${item.subcategory}</div>
@@ -691,18 +686,18 @@
 
   async function init() {
     const grid = document.getElementById("catalogGrid");
-    if (!GOOGLE_SHEET_CSV_URL) {
-      groupedProducts = groupItems(DEMO_ROWS);
-      renderSidebar();
-      renderGrid();
-      return;
-    }
-
-    grid.innerHTML = `<div class="status-msg">Загрузка каталога...</div>`;
+    grid.innerHTML = `<div class="status-msg">Загрузка каталога из таблицы...</div>`;
+    
     try {
       const res = await fetch(GOOGLE_SHEET_CSV_URL);
       const csvText = await res.text();
       const rows = parseCSV(csvText);
+      
+      if (rows.length === 0) {
+        grid.innerHTML = `<div class="status-msg">Таблица пуста или не содержит данных.</div>`;
+        return;
+      }
+
       groupedProducts = groupItems(rows);
       renderSidebar();
       renderGrid();
