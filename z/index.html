@@ -48,6 +48,37 @@
       border-left: 4px solid #1a73e8;
       position: relative;
     }
+    /* Контейнер для поля ввода товара и выпадающего списка */
+    .autocomplete-container {
+      position: relative;
+      width: 100%;
+    }
+    /* Выпадающий список под строкой */
+    .autocomplete-items {
+      position: absolute;
+      border: 1px solid #ddd;
+      border-top: none;
+      border-bottom-left-radius: 6px;
+      border-bottom-right-radius: 6px;
+      z-index: 99;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      max-height: 150px;
+      overflow-y: auto;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .autocomplete-items div {
+      padding: 10px 12px;
+      cursor: pointer;
+      font-size: 15px;
+      border-bottom: 1px solid #f4f4f9;
+    }
+    .autocomplete-items div:hover {
+      background: #e8f0fe;
+      color: #1a73e8;
+    }
     button {
       padding: 10px 15px;
       border: none;
@@ -69,7 +100,7 @@
   
   <form id="orderForm">
     <div class="form-group">
-      <!-- PIN-код с цифровой клавиатурой для телефонов -->
+      <!-- PIN-код -->
       <label for="pinCode">PIN-код для подтверждения</label>
       <input type="password" id="pinCode" inputmode="numeric" pattern="[0-9]*" placeholder="Введите PIN-код" required>
 
@@ -102,8 +133,10 @@
     <div id="itemsContainer">
       <div class="item-row">
         <label>Товар</label>
-        <input type="text" class="item-name" list="productsList" placeholder="Начните ввод..." required>
-        <label>Количество</label>
+        <div class="autocomplete-container">
+          <input type="text" class="item-name" placeholder="Начните ввод..." autocomplete="off" required>
+        </div>
+        <label style="margin-top: 10px;">Количество</label>
         <input type="number" class="item-qty" value="1" min="1" required>
       </div>
     </div>
@@ -114,17 +147,15 @@
 
   <div id="status"></div>
 
-  <!-- Список товаров для подсказок -->
-  <datalist id="productsList"></datalist>
-
   <script>
     document.getElementById('date').valueAsDate = new Date();
 
-    // Твоя ссылка на веб-приложение Apps Script
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_0bjBQcBtn2XpO5UtVHcC10TBdfrQJ93aRGbdDaq8ObvTN9sfRtrEJoOulJ91LntK/exec';
-    const CORRECT_PIN = '2326'; // Твой секретный код
+    const CORRECT_PIN = '2326';
 
-    // Загрузка товаров из products.txt в корне репозитория
+    let globalProducts = [];
+
+    // Загрузка товаров из products.txt
     window.onload = function() {
       fetch('products.txt')
         .then(response => {
@@ -132,19 +163,56 @@
           throw new Error();
         })
         .then(text => {
-          const lines = text.split('\n');
-          const datalist = document.getElementById('productsList');
-          lines.forEach(line => {
-            const trimmed = line.trim();
-            if (trimmed) {
-              const option = document.createElement('option');
-              option.value = trimmed;
-              datalist.appendChild(option);
-            }
-          });
+          globalProducts = text.split('\n')
+            .map(item => item.trim())
+            .filter(item => item.length > 0);
         })
         .catch(() => console.log("products.txt не найден, доступен свободный ввод."));
     };
+
+    // Настройка автодополнения для полей ввода товаров
+    document.addEventListener('input', function(e) {
+      if (!e.target.classList.contains('item-name')) return;
+      
+      const input = e.target;
+      const val = input.value;
+      
+      closeAllLists();
+      if (!val) return;
+
+      const container = document.createElement('div');
+      container.setAttribute('class', 'autocomplete-items');
+      input.parentNode.appendChild(container);
+
+      globalProducts.forEach(product => {
+        if (product.toLowerCase().includes(val.toLowerCase())) {
+          const itemDiv = document.createElement('div');
+          // Выделяем совпадение жирным (опционально, или просто текст)
+          itemDiv.innerHTML = product;
+          itemDiv.addEventListener('click', function() {
+            input.value = product;
+            closeAllLists();
+          });
+          container.appendChild(itemDiv);
+        }
+      });
+    });
+
+    // Закрытие списков при клике вне поля
+    document.addEventListener('click', function(e) {
+      if (!e.target.classList.contains('item-name')) {
+        closeAllLists();
+      }
+    });
+
+    function closeAllLists(elmnt) {
+      const items = document.getElementsByClassName('autocomplete-items');
+      for (let i = 0; i < items.length; i++) {
+        if (elmnt != items[i] && elmnt != items[i].parentNode.querySelector('.item-name')) {
+          items[i].parentNode.removeChild(items[i]);
+        }
+      }
+    }
 
     function addItem() {
       const container = document.getElementById('itemsContainer');
@@ -153,8 +221,10 @@
       div.innerHTML = `
         <button type="button" class="btn-remove" onclick="removeItem(this)">Удалить</button>
         <label>Товар</label>
-        <input type="text" class="item-name" list="productsList" placeholder="Начните ввод..." required>
-        <label>Количество</label>
+        <div class="autocomplete-container">
+          <input type="text" class="item-name" placeholder="Начните ввод..." autocomplete="off" required>
+        </div>
+        <label style="margin-top: 10px;">Количество</label>
         <input type="number" class="item-qty" value="1" min="1" required>
       `;
       container.appendChild(div);
@@ -165,7 +235,6 @@
     document.getElementById('orderForm').addEventListener('submit', function(e) {
       e.preventDefault();
       
-      // Проверка пин-кода перед отправкой
       const enteredPin = document.getElementById('pinCode').value;
       if (enteredPin !== CORRECT_PIN) {
         alert("❌ Неверный PIN-код!");
@@ -213,8 +282,10 @@
         document.getElementById('itemsContainer').innerHTML = `
           <div class="item-row">
             <label>Товар</label>
-            <input type="text" class="item-name" list="productsList" placeholder="Начните ввод..." required>
-            <label>Количество</label>
+            <div class="autocomplete-container">
+              <input type="text" class="item-name" placeholder="Начните ввод..." autocomplete="off" required>
+            </div>
+            <label style="margin-top: 10px;">Количество</label>
             <input type="number" class="item-qty" value="1" min="1" required>
           </div>
         `;
