@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Учет отгрузок</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 500px;
+      margin: 20px auto;
+      padding: 15px;
+      background: #f4f4f9;
+      color: #333;
+    }
+    h2, h3 { text-align: center; color: #1a73e8; }
+    .form-group {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: 600;
+      font-size: 13px;
+      color: #555;
+      text-transform: uppercase;
+    }
+    select, input {
+      width: 100%;
+      padding: 10px 12px;
+      margin-top: 5px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 15px;
+      background: #fafafa;
+    }
+    .item-row {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+      border-left: 4px solid #1a73e8;
+      position: relative;
+    }
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .btn-add { background: #e6f4ea; color: #137333; width: 100%; margin-bottom: 15px; border: 1px dashed #34a853; }
+    .btn-remove { background: #fce8e6; color: #c5221f; padding: 5px 10px; float: right; }
+    .btn-submit { background: #1a73e8; color: white; width: 100%; font-size: 16px; padding: 14px; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    #status { margin-top: 15px; padding: 12px; border-radius: 6px; text-align: center; font-weight: 500; display: none; }
+  </style>
+</head>
+<body>
+
+  <h2>📦 Учет отгрузок</h2>
+  
+  <form id="orderForm">
+    <div class="form-group">
+      <!-- PIN-код с цифровой клавиатурой для телефонов -->
+      <label for="pinCode">PIN-код для подтверждения</label>
+      <input type="password" id="pinCode" inputmode="numeric" pattern="[0-9]*" placeholder="Введите PIN-код" required>
+
+      <label for="warehouse">Склад</label>
+      <select id="warehouse" required>
+        <option value="Краснодар">Краснодар</option>
+        <option value="Краснодар Россия">Краснодар Россия</option>
+        <option value="Воронеж">Воронеж</option>
+        <option value="Ростов">Ростов</option>
+      </select>
+
+      <label for="date">Дата</label>
+      <input type="date" id="date" required>
+
+      <label for="statusField">Статус</label>
+      <select id="statusField">
+        <option value="доки" selected>доки</option>
+        <option value="отказ">отказ</option>
+        <option value="проведено">проведено</option>
+      </select>
+
+      <label for="totalSum">Общая сумма заказа</label>
+      <input type="number" id="totalSum" placeholder="Сумма" required>
+
+      <label for="track">Трек-номер</label>
+      <input type="text" id="track" placeholder="Трек или статус доставки" required>
+    </div>
+
+    <h3>Товары</h3>
+    <div id="itemsContainer">
+      <div class="item-row">
+        <label>Товар</label>
+        <input type="text" class="item-name" list="productsList" placeholder="Начните ввод..." required>
+        <label>Количество</label>
+        <input type="number" class="item-qty" value="1" min="1" required>
+      </div>
+    </div>
+    
+    <button type="button" class="btn-add" onclick="addItem()">+ Добавить еще товар</button>
+    <button type="submit" id="submitBtn" class="btn-submit">Отправить в таблицу</button>
+  </form>
+
+  <div id="status"></div>
+
+  <!-- Список товаров для подсказок -->
+  <datalist id="productsList"></datalist>
+
+  <script>
+    document.getElementById('date').valueAsDate = new Date();
+
+    // Твоя ссылка на веб-приложение Apps Script
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_0bjBQcBtn2XpO5UtVHcC10TBdfrQJ93aRGbdDaq8ObvTN9sfRtrEJoOulJ91LntK/exec';
+    const CORRECT_PIN = '2326'; // Твой секретный код
+
+    // Загрузка товаров из products.txt в корне репозитория
+    window.onload = function() {
+      fetch('products.txt')
+        .then(response => {
+          if (response.ok) return response.text();
+          throw new Error();
+        })
+        .then(text => {
+          const lines = text.split('\n');
+          const datalist = document.getElementById('productsList');
+          lines.forEach(line => {
+            const trimmed = line.trim();
+            if (trimmed) {
+              const option = document.createElement('option');
+              option.value = trimmed;
+              datalist.appendChild(option);
+            }
+          });
+        })
+        .catch(() => console.log("products.txt не найден, доступен свободный ввод."));
+    };
+
+    function addItem() {
+      const container = document.getElementById('itemsContainer');
+      const div = document.createElement('div');
+      div.className = 'item-row';
+      div.innerHTML = `
+        <button type="button" class="btn-remove" onclick="removeItem(this)">Удалить</button>
+        <label>Товар</label>
+        <input type="text" class="item-name" list="productsList" placeholder="Начните ввод..." required>
+        <label>Количество</label>
+        <input type="number" class="item-qty" value="1" min="1" required>
+      `;
+      container.appendChild(div);
+    }
+
+    function removeItem(btn) { btn.parentElement.remove(); }
+
+    document.getElementById('orderForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Проверка пин-кода перед отправкой
+      const enteredPin = document.getElementById('pinCode').value;
+      if (enteredPin !== CORRECT_PIN) {
+        alert("❌ Неверный PIN-код!");
+        return;
+      }
+
+      const btn = document.getElementById('submitBtn');
+      const statusDiv = document.getElementById('status');
+      btn.disabled = true;
+      statusDiv.style.display = 'block';
+      statusDiv.style.backgroundColor = '#e2e3e5';
+      statusDiv.style.color = '#383d41';
+      statusDiv.innerText = "⏳ Отправка данных в таблицу...";
+
+      const itemNames = document.getElementsByClassName('item-name');
+      const itemQtys = document.getElementsByClassName('item-qty');
+      const items = [];
+      for (let i = 0; i < itemNames.length; i++) {
+        items.push({ name: itemNames[i].value, qty: itemQtys[i].value });
+      }
+
+      const payload = {
+        warehouse: document.getElementById('warehouse').value,
+        date: document.getElementById('date').value,
+        status: document.getElementById('statusField').value,
+        totalSum: document.getElementById('totalSum').value,
+        track: document.getElementById('track').value,
+        items: items
+      };
+
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        statusDiv.style.backgroundColor = '#d4edda';
+        statusDiv.style.color = '#155724';
+        statusDiv.innerText = "✅ Заказ успешно отправлен!";
+        
+        document.getElementById('orderForm').reset();
+        document.getElementById('pinCode').value = ''; 
+        document.getElementById('date').valueAsDate = new Date();
+        document.getElementById('itemsContainer').innerHTML = `
+          <div class="item-row">
+            <label>Товар</label>
+            <input type="text" class="item-name" list="productsList" placeholder="Начните ввод..." required>
+            <label>Количество</label>
+            <input type="number" class="item-qty" value="1" min="1" required>
+          </div>
+        `;
+      })
+      .catch(error => {
+        statusDiv.style.backgroundColor = '#f8d7da';
+        statusDiv.style.color = '#721c24';
+        statusDiv.innerText = "❌ Ошибка отправки: " + error.message;
+      })
+      .finally(() => {
+        btn.disabled = false;
+      });
+    });
+  </script>
+</body>
+</html>
