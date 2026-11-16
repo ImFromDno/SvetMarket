@@ -11,7 +11,6 @@
       --text: #1e293b;
       --muted: #64748b;
       --primary: #2563eb;
-      --primary-hover: #1d4ed8;
       --border: #e2e8f0;
       --green: #16a34a;
       --orange: #d97706;
@@ -27,7 +26,6 @@
       line-height: 1.5;
     }
 
-    /* Шапка */
     header {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -48,33 +46,9 @@
       gap: 12px;
       padding: 16px 0;
     }
-    .logo {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--text);
-    }
+    .logo { font-size: 20px; font-weight: 700; }
     .logo span { color: var(--primary); }
 
-    .contacts {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .contact-btn {
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      padding: 8px 14px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      color: var(--text);
-      background: var(--bg);
-      transition: 0.2s;
-    }
-    .contact-btn:hover { border-color: var(--primary); color: var(--primary); }
-    .contact-btn.tg { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
-
-    /* Основной макет */
     .layout {
       display: flex;
       align-items: flex-start;
@@ -85,7 +59,6 @@
       .layout { flex-direction: column; }
     }
 
-    /* Сайдбар */
     .sidebar {
       width: 280px;
       min-width: 280px;
@@ -99,15 +72,29 @@
     }
 
     .sidebar-title {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 700;
       margin-bottom: 12px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border);
       color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
+
+    .all-cats-btn {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 12px;
+      text-align: left;
+      transition: 0.15s;
+    }
+    .all-cats-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .all-cats-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
     .category-group {
       margin-bottom: 8px;
     }
@@ -162,33 +149,13 @@
       background: #eff6ff;
       font-weight: 600;
     }
-    .all-cats-btn {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      padding: 10px 12px;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-bottom: 12px;
-      text-align: left;
-      transition: 0.15s;
-    }
-    .all-cats-btn:hover { border-color: var(--primary); color: var(--primary); }
-    .all-cats-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-    /* Правая часть: поиск и сетка */
     .content-area {
       flex-grow: 1;
       width: 100%;
       display: flex;
       flex-direction: column;
       gap: 16px;
-    }
-    .search-box {
-      position: relative;
-      width: 100%;
     }
     .search-box input {
       width: 100%;
@@ -198,11 +165,9 @@
       font-size: 15px;
       background: var(--surface);
       outline: none;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
     .search-box input:focus { border-color: var(--primary); }
 
-    /* Сетка товаров */
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -215,42 +180,32 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      transition: transform 0.15s, box-shadow 0.15s;
     }
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-    }
-    .card-img-wrap {
-      position: relative;
-      height: 200px;
+    .card-img {
+      height: 180px;
       background: #f8fafc;
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
       cursor: pointer;
-      overflow: hidden;
     }
-    .card-img-wrap img {
+    .card-img img {
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
-      padding: 12px;
+      padding: 10px;
     }
-    .badge-sub {
+    .badge {
       position: absolute;
       top: 10px;
       left: 10px;
-      background: rgba(255,255,255,0.92);
-      padding: 3px 8px;
+      background: #fff;
+      padding: 2px 8px;
       border-radius: 6px;
       font-size: 11px;
       color: var(--muted);
       border: 1px solid var(--border);
-      max-width: 80%;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
     .card-body {
       padding: 16px;
@@ -263,14 +218,9 @@
       font-weight: 600;
       margin-bottom: 10px;
       cursor: pointer;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
     }
     .title:hover { color: var(--primary); }
 
-    /* Варианты */
     .variants {
       display: flex;
       flex-wrap: wrap;
@@ -284,7 +234,6 @@
       border: 1px solid var(--border);
       background: var(--bg);
       cursor: pointer;
-      color: var(--text);
     }
     .var-btn.active {
       background: #eff6ff;
@@ -300,16 +249,9 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
     }
-    .price {
-      font-size: 17px;
-      font-weight: 700;
-    }
-    .stock {
-      font-size: 11px;
-      font-weight: 500;
-    }
+    .price { font-size: 17px; font-weight: 700; }
+    .stock { font-size: 11px; font-weight: 500; }
     .stock.in { color: var(--green); }
     .stock.order { color: var(--orange); }
     .stock.out { color: var(--red); }
@@ -321,19 +263,13 @@
       background: var(--surface);
       font-size: 12px;
       cursor: pointer;
-      font-weight: 500;
     }
-    .details-btn:hover {
-      background: var(--primary);
-      color: #fff;
-      border-color: var(--primary);
-    }
+    .details-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-    /* Модальное окно */
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.5);
+      background: rgba(0,0,0,0.5);
       display: none;
       align-items: center;
       justify-content: center;
@@ -344,10 +280,8 @@
     .modal {
       background: var(--surface);
       border-radius: 16px;
-      max-width: 680px;
+      max-width: 600px;
       width: 100%;
-      max-height: 90vh;
-      overflow-y: auto;
       padding: 24px;
       position: relative;
     }
@@ -357,46 +291,13 @@
       right: 16px;
       background: var(--bg);
       border: none;
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
-      font-size: 18px;
       cursor: pointer;
+      font-size: 16px;
     }
-    .modal-grid {
-      display: grid;
-      grid-template-columns: 1fr 1.2fr;
-      gap: 20px;
-    }
-    @media (max-width: 600px) {
-      .modal-grid { grid-template-columns: 1fr; }
-    }
-    .modal-img {
-      width: 100%;
-      max-height: 240px;
-      object-fit: contain;
-      background: #f8fafc;
-      border-radius: 10px;
-      padding: 10px;
-    }
-    .specs-list {
-      margin: 12px 0;
-      padding-left: 18px;
-      font-size: 14px;
-      color: var(--text);
-    }
-    .specs-list li { margin-bottom: 4px; }
-    .desc {
-      font-size: 14px;
-      color: var(--muted);
-      margin-top: 10px;
-    }
-    .status-msg {
-      text-align: center;
-      padding: 40px;
-      color: var(--muted);
-      grid-column: 1 / -1;
-    }
+    .status-msg { text-align: center; padding: 40px; color: var(--muted); grid-column: 1/-1; }
   </style>
 </head>
 <body>
@@ -404,137 +305,136 @@
 <header>
   <div class="container header-top">
     <div class="logo">Каталог <span>Продукции</span></div>
-    <div class="contacts">
-      <a href="tel:+79000000000" class="contact-btn">📞 +7 (900) 000-00-00</a>
-      <a href="https://t.me/username" target="_blank" class="contact-btn tg">✈️ Написать в Telegram</a>
-    </div>
   </div>
 </header>
 
 <main class="container layout">
-  <!-- Сайдбар с категориями и подгруппами -->
   <aside class="sidebar">
     <div class="sidebar-title">Каталог</div>
-    <button class="all-cats-btn active" id="allCatsBtn" onclick="selectSubCategory('ALL')">Все товары</button>
-    <div id="sidebarAccordion"></div>
+    <button class="all-cats-btn active" id="allCatsBtn" onclick="setCategory('ALL')">Все товары</button>
+    <div id="categoryAccordion"></div>
   </aside>
 
-  <!-- Правая часть -->
   <div class="content-area">
     <div class="search-box">
-      <input type="text" id="searchInput" placeholder="Поиск по названию..." />
+      <input type="text" id="searchInput" placeholder="Поиск товара..." />
     </div>
     <div class="grid" id="catalogGrid"></div>
   </div>
 </main>
 
-<!-- Модальное окно -->
 <div class="modal-backdrop" id="modalBackdrop">
   <div class="modal">
-    <button class="modal-close" id="modalClose">&times;</button>
+    <button class="modal-close" onclick="closeModal()">&times;</button>
     <div id="modalContent"></div>
   </div>
 </div>
 
 <script>
-  // Твоя ссылка на таблицу
-  const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2NjokEEfkRUGD3QtUyDJM0jK_QCY19GH18Rl8UAyjo280P79x5BT1HqNzsZ5m5HxEI_xkMy4GQrNn/pub?output=csv";
+  const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2NjokEEfkRUGD3QtUyDJM0jK_QCY19GH18Rl8UAyjo280P79x5BT1HqNzsZ5m5HxEI_xkMy4GQrNn/pub?output=csv";
 
-  let groupedProducts = [];
-  let currentSelection = "ALL";
+  let productsMap = new Map();
+  let currentSelection = "ALL"; // Может быть 'ALL', либо конкретная subcategory
   let searchQuery = "";
 
-  function parseCSV(text) {
-    if (text.charCodeAt(0) === 0xFEFF) {
-      text = text.slice(1);
-    }
-    
+  function parseCSVLine(text) {
     const rows = [];
-    let current = [], val = "", inQuotes = false;
+    let row = [], entry = "", insideQuotes = false;
     for (let i = 0; i < text.length; i++) {
-      const char = text[i], next = text[i + 1];
-      if (char === '"' && inQuotes && next === '"') { val += '"'; i++; }
-      else if (char === '"') { inQuotes = !inQuotes; }
-      else if (char === ',' && !inQuotes) { current.push(val.trim()); val = ""; }
-      else if ((char === '\n' || char === '\r') && !inQuotes) {
-        if (char === '\r' && next === '\n') i++;
-        current.push(val.trim());
-        if (current.some(c => c !== "")) rows.push(current);
-        current = []; val = "";
-      } else { val += char; }
+      let c = text[i], next = text[i+1];
+      if (c === '"' && insideQuotes && next === '"') { entry += '"'; i++; }
+      else if (c === '"') { insideQuotes = !insideQuotes; }
+      else if (c === ',' && !insideQuotes) { row.push(entry.trim()); entry = ""; }
+      else if ((c === '\r' && next === '\n') || (c === '\n' && !insideQuotes)) {
+        if (c === '\r' && next === '\n') i++;
+        row.push(entry.trim());
+        if (row.some(x => x !== "")) rows.push(row);
+        row = []; entry = "";
+      } else { entry += c; }
     }
-    if (val || current.length) { current.push(val.trim()); if (current.some(c => c !== "")) rows.push(current); }
-    
-    if (rows.length === 0) return [];
-
-    // Читаем заголовки и приводим к нижнему регистру
-    const headers = rows[0].map(h => h.toLowerCase().trim().replace(/^"(.*)"$/, '$1'));
-    
-    return rows.slice(1).map(row => {
-      const obj = {};
-      headers.forEach((h, idx) => {
-        let val = row[idx] || "";
-        // Убираем возможные кавычки по краям ячеек
-        val = val.replace(/^"(.*)"$/, '$1').trim();
-        obj[h] = val;
-      });
-      return obj;
-    });
+    if (entry !== "" || row.length > 0) {
+      row.push(entry.trim());
+      if (row.some(x => x !== "")) rows.push(row);
+    }
+    return rows;
   }
 
-  function groupItems(rows) {
-    const map = new Map();
-    rows.forEach((row, index) => {
-      const gid = row.group_id || `single-${index}`;
-      if (!map.has(gid)) {
-        map.set(gid, {
-          id: gid,
-          category: row.category || "Другое",
-          subcategory: row.subcategory || "Общие",
-          name: row.name || "Без названия",
-          selectedIndex: 0,
-          variants: []
+  async function loadData() {
+    const grid = document.getElementById("catalogGrid");
+    grid.innerHTML = `<div class="status-msg">Загрузка данных...</div>`;
+
+    try {
+      const response = await fetch(CSV_URL);
+      const text = await response.text();
+      const rows = parseCSVLine(text);
+
+      if (rows.length < 2) {
+        grid.innerHTML = `<div class="status-msg">Таблица пустая</div>`;
+        return;
+      }
+
+      productsMap.clear();
+
+      for (let i = 1; i < rows.length; i++) {
+        let r = rows[i];
+        
+        let gid = r[0] || `item-${i}`;       // Колонка A: group_id
+        let cat = r[1] || "Прочее";          // Колонка B: category (Уровень 1)
+        let sub = r[2] || "Общие";           // Колонка C: subcategory (Уровень 2)
+        let name = r[3] || "Без названия";    // Колонка D: name
+        let variant = r[4] || "";            // Колонка E: variant
+        let price = r[5] || "0";             // Колонка F: price
+        let stock = r[6] || "В наличии";     // Колонка G: stock
+        let image = r[7] || "";              // Колонка H: image
+        let specs = r[8] || "";              // Колонка I: specs
+        let description = r[9] || "";        // Колонка J: description
+
+        if (!productsMap.has(gid)) {
+          productsMap.set(gid, {
+            id: gid,
+            category: cat,
+            subcategory: sub,
+            name: name,
+            selectedIndex: 0,
+            variants: []
+          });
+        }
+
+        productsMap.get(gid).variants.push({
+          variant: variant,
+          price: price,
+          stock: stock,
+          image: image,
+          specs: specs,
+          description: description
         });
       }
-      map.get(gid).variants.push({
-        variant: row.variant || "",
-        price: row.price || "",
-        stock: row.stock || "В наличии",
-        image: row.image || "",
-        specs: row.specs || "",
-        description: row.description || ""
-      });
-    });
-    return Array.from(map.values());
-  }
 
-  function formatPrice(priceStr) {
-    const num = parseFloat(String(priceStr).replace(/[^\d.]/g, ""));
-    if (isNaN(num)) return priceStr || "По запросу";
-    return num.toLocaleString("ru-RU") + " ₽";
-  }
+      renderSidebar();
+      renderGrid();
 
-  function getStockClass(stock) {
-    const s = stock.toLowerCase();
-    if (s.includes("нет")) return "out";
-    if (s.includes("заказ") || s.includes("уточняй")) return "order";
-    return "in";
+    } catch (e) {
+      grid.innerHTML = `<div class="status-msg">Ошибка загрузки таблицы.</div>`;
+    }
   }
 
   function renderSidebar() {
-    const accordion = document.getElementById("sidebarAccordion");
+    const accordion = document.getElementById("categoryAccordion");
     const allBtn = document.getElementById("allCatsBtn");
     allBtn.className = `all-cats-btn ${currentSelection === 'ALL' ? 'active' : ''}`;
 
+    // Строим дерево: Категория -> Набор подкатегорий
     const tree = {};
-    groupedProducts.forEach(p => {
+    productsMap.forEach(p => {
       if (!tree[p.category]) tree[p.category] = new Set();
       tree[p.category].add(p.subcategory);
     });
 
     let html = "";
     for (const [cat, subs] of Object.entries(tree)) {
-      const isParentActive = Array.from(subs).includes(currentSelection);
+      const subsArr = Array.from(subs);
+      const isParentActive = subsArr.includes(currentSelection);
+      
       html += `
         <div class="category-group ${isParentActive ? 'open' : ''}">
           <button class="cat-header ${isParentActive ? 'active-parent' : ''}" onclick="toggleCategory(this)">
@@ -542,8 +442,8 @@
             <span class="cat-arrow">▼</span>
           </button>
           <div class="sub-list">
-            ${Array.from(subs).map(sub => `
-              <button class="sub-btn ${currentSelection === sub ? 'active' : ''}" onclick="selectSubCategory('${sub}')">
+            ${subsArr.map(sub => `
+              <button class="sub-btn ${currentSelection === sub ? 'active' : ''}" onclick="setCategory('${sub}')">
                 — ${sub}
               </button>
             `).join("")}
@@ -556,157 +456,125 @@
 
   window.toggleCategory = function(btn) {
     btn.parentElement.classList.toggle("open");
-  };
+  }
 
-  window.selectSubCategory = function(sub) {
+  window.setCategory = function(sub) {
     currentSelection = sub;
     renderSidebar();
     renderGrid();
-  };
+  }
 
   function renderGrid() {
     const grid = document.getElementById("catalogGrid");
-    const q = searchQuery.toLowerCase();
+    let items = Array.from(productsMap.values());
 
-    const filtered = groupedProducts.filter(item => {
-      const matchSub = currentSelection === "ALL" || item.subcategory === currentSelection;
-      const matchSearch = !q ||
-        item.name.toLowerCase().includes(q) ||
-        item.variants.some(v => v.variant.toLowerCase().includes(q));
-      return matchSub && matchSearch;
+    items = items.filter(item => {
+      let matchCat = currentSelection === 'ALL' || item.subcategory === currentSelection;
+      let matchSearch = !searchQuery || item.name.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchCat && matchSearch;
     });
 
-    if (!filtered.length) {
-      grid.innerHTML = `<div class="status-msg">По вашему запросу ничего не найдено</div>`;
+    if (items.length === 0) {
+      grid.innerHTML = `<div class="status-msg">Ничего не найдено</div>`;
       return;
     }
 
-    grid.innerHTML = filtered.map(item => {
-      const v = item.variants[item.selectedIndex];
-      const hasVariants = item.variants.length > 1 || (item.variants.length === 1 && v.variant);
-      const imgSrc = v.image ? v.image : 'https://placehold.co/400x300/f8fafc/94a3b8?text=Нет+фото';
+    grid.innerHTML = items.map(item => {
+      let v = item.variants[item.selectedIndex] || item.variants[0];
+      let hasVariants = item.variants.length > 1;
+      let img = v.image ? v.image : 'https://placehold.co/400x300/f8fafc/94a3b8?text=Нет+фото';
 
       return `
-        <div class="card" data-id="${item.id}">
-          <div class="card-img-wrap" onclick="openModal('${item.id}')">
-            <span class="badge-sub">${item.subcategory}</span>
-            <img src="${imgSrc}" alt="${item.name}" loading="lazy" onerror="this.src='https://placehold.co/400x300/f8fafc/94a3b8?text=Нет+фото'" />
+        <div class="card">
+          <div class="card-img" onclick="openModal('${item.id}')">
+            <span class="badge">${item.subcategory}</span>
+            <img src="${img}" alt="" onerror="this.src='https://placehold.co/400x300/f8fafc/94a3b8?text=Нет+фото'" />
           </div>
           <div class="card-body">
-            <div class="title" onclick="openModal('${item.id}')">${item.name} ${v.variant ? `(${v.variant})` : ""}</div>
-
+            <div class="title" onclick="openModal('${item.id}')">${item.name} ${v.variant ? `(${v.variant})` : ''}</div>
+            
             ${hasVariants ? `
               <div class="variants">
-                ${item.variants.map((variantObj, idx) => `
-                  <button class="var-btn ${idx === item.selectedIndex ? "active" : ""}"
-                          onclick="selectVariant('${item.id}', ${idx})">
-                    ${variantObj.variant || `Вариант ${idx + 1}`}
-                  </button>
-                `).join("")}
+                ${item.variants.map((vr, idx) => `
+                  <button class="var-btn ${idx === item.selectedIndex ? 'active' : ''}" onclick="selectVar('${item.id}', ${idx})">${vr.variant}</button>
+                `).join('')}
               </div>
-            ` : ""}
+            ` : ''}
 
             <div class="card-footer">
               <div>
-                <div class="price">${formatPrice(v.price)}</div>
-                <div class="stock ${getStockClass(v.stock)}">${v.stock}</div>
+                <div class="price">${v.price} ₽</div>
+                <div class="stock in">${v.stock}</div>
               </div>
               <button class="details-btn" onclick="openModal('${item.id}')">Подробнее</button>
             </div>
           </div>
         </div>
       `;
-    }).join("");
+    }).join('');
   }
 
-  window.selectVariant = function(id, variantIndex) {
-    const item = groupedProducts.find(p => p.id === id);
+  window.selectVar = function(id, index) {
+    let item = productsMap.get(id);
     if (item) {
-      item.selectedIndex = variantIndex;
+      item.selectedIndex = index;
       renderGrid();
+      if (document.getElementById("modalBackdrop").classList.contains("open")) {
+        openModal(id);
+      }
     }
-  };
+  }
 
   window.openModal = function(id) {
-    const item = groupedProducts.find(p => p.id === id);
+    let item = productsMap.get(id);
     if (!item) return;
-    const v = item.variants[item.selectedIndex];
-    const specsArr = v.specs ? v.specs.split(";").map(s => s.trim()).filter(Boolean) : [];
-    const imgSrc = v.image ? v.image : 'https://placehold.co/400x300/f8fafc/94a3b8?text=Нет+фото';
+    let v = item.variants[item.selectedIndex];
+    let img = v.image ? v.image : 'https://placehold.co/400x300/f8fafc/94a3b8?text=Нет+фото';
+    let specsArr = v.specs ? v.specs.split(/[,;]/).map(s => s.trim()).filter(Boolean) : [];
+    let hasVariants = item.variants.length > 1;
 
     document.getElementById("modalContent").innerHTML = `
-      <div class="modal-grid">
-        <div>
-          <img class="modal-img" src="${imgSrc}" alt="${item.name}" onerror="this.src='https://placehold.co/400x300/f8fafc/94a3b8?text=Нет+фото'" />
+      <h2>${item.name} ${v.variant ? `(${v.variant})` : ''}</h2>
+      <img src="${img}" style="width:100%; max-height:200px; object-fit:contain; margin:10px 0;" />
+      
+      ${hasVariants ? `
+        <div style="margin-bottom: 12px;">
+          <div style="font-size: 13px; color: var(--muted); margin-bottom: 6px;">Выберите вариант:</div>
+          <div class="variants">
+            ${item.variants.map((vr, idx) => `
+              <button class="var-btn ${idx === item.selectedIndex ? 'active' : ''}" onclick="selectVar('${item.id}', ${idx})">${vr.variant}</button>
+            `).join('')}
+          </div>
         </div>
-        <div>
-          <div style="font-size:12px; color:var(--muted); margin-bottom:4px;">${item.category} / ${item.subcategory}</div>
-          <h2 style="font-size:18px; margin: 0 0 12px;">${item.name} ${v.variant ? `(${v.variant})` : ""}</h2>
-          <div class="price" style="font-size:22px; margin-bottom:4px;">${formatPrice(v.price)}</div>
-          <div class="stock ${getStockClass(v.stock)}" style="margin-bottom:14px;">${v.stock}</div>
+      ` : ''}
 
-          ${item.variants.length > 1 ? `
-            <div style="font-size:13px; color:var(--muted); margin-bottom:6px;">Выберите вариант:</div>
-            <div class="variants">
-              ${item.variants.map((variantObj, idx) => `
-                <button class="var-btn ${idx === item.selectedIndex ? "active" : ""}"
-                        onclick="selectVariant('${item.id}', ${idx}); openModal('${item.id}')">
-                  ${variantObj.variant}
-                </button>
-              `).join("")}
-            </div>
-          ` : ""}
-
-          ${specsArr.length ? `
-            <ul class="specs-list">
-              ${specsArr.map(s => `<li>${s}</li>`).join("")}
-            </ul>
-          ` : ""}
-
-          ${v.description ? `<p class="desc">${v.description}</p>` : ""}
+      <p style="font-size:18px; font-weight:700; margin-bottom:4px;">${v.price} ₽</p>
+      <p style="margin-bottom:12px; font-size:13px; color:var(--muted);">Наличие: ${v.stock}</p>
+      
+      ${specsArr.length ? `
+        <div style="margin-top:12px; border-top:1px solid var(--border); padding-top:10px;">
+          <b style="font-size:14px;">Характеристики:</b>
+          <ul style="margin: 6px 0 0 18px; font-size:14px; color:var(--text);">
+            ${specsArr.map(s => `<li style="margin-bottom:3px;">${s}</li>`).join('')}
+          </ul>
         </div>
-      </div>
+      ` : ''}
+
+      ${v.description ? `<p style="margin-top:12px; font-size:13px; color:var(--muted); border-top:1px solid var(--border); padding-top:10px;">${v.description}</p>` : ''}
     `;
     document.getElementById("modalBackdrop").classList.add("open");
-  };
+  }
 
-  document.getElementById("modalClose").onclick = () => {
+  window.closeModal = function() {
     document.getElementById("modalBackdrop").classList.remove("open");
-  };
-  document.getElementById("modalBackdrop").onclick = (e) => {
-    if (e.target.id === "modalBackdrop") {
-      document.getElementById("modalBackdrop").classList.remove("open");
-    }
-  };
+  }
 
   document.getElementById("searchInput").addEventListener("input", (e) => {
     searchQuery = e.target.value;
     renderGrid();
   });
 
-  async function init() {
-    const grid = document.getElementById("catalogGrid");
-    grid.innerHTML = `<div class="status-msg">Загрузка каталога из таблицы...</div>`;
-    
-    try {
-      const res = await fetch(GOOGLE_SHEET_CSV_URL);
-      const csvText = await res.text();
-      const rows = parseCSV(csvText);
-      
-      if (rows.length === 0) {
-        grid.innerHTML = `<div class="status-msg">Таблица пуста или не содержит данных.</div>`;
-        return;
-      }
-
-      groupedProducts = groupItems(rows);
-      renderSidebar();
-      renderGrid();
-    } catch (err) {
-      grid.innerHTML = `<div class="status-msg">Не удалось загрузить таблицу. Проверьте ссылку публикации.</div>`;
-    }
-  }
-
-  init();
+  loadData();
 </script>
 </body>
 </html>
