@@ -29,7 +29,7 @@
       color: #555;
       text-transform: uppercase;
     }
-    select, input {
+    select, input[type="text"], input[type="number"], input[type="date"], input[type="password"] {
       width: 100%;
       padding: 10px 12px;
       margin-top: 5px;
@@ -38,6 +38,40 @@
       box-sizing: border-box;
       font-size: 15px;
       background: #fafafa;
+    }
+    /* Строка для трек-номера и чекбокса в один ряд */
+    .track-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 5px;
+    }
+    .track-row input[type="text"] {
+      margin-top: 0;
+      flex: 1;
+    }
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 0;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: #137333;
+      background: #e6f4ea;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid #ceead6;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .checkbox-label input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      cursor: pointer;
+      accent-color: #137333;
     }
     .item-row {
       background: white;
@@ -48,12 +82,10 @@
       border-left: 4px solid #1a73e8;
       position: relative;
     }
-    /* Контейнер для поля ввода товара и выпадающего списка */
     .autocomplete-container {
       position: relative;
       width: 100%;
     }
-    /* Выпадающий список под строкой */
     .autocomplete-items {
       position: absolute;
       border: 1px solid #ddd;
@@ -100,7 +132,6 @@
   
   <form id="orderForm">
     <div class="form-group">
-      <!-- PIN-код -->
       <label for="pinCode">PIN-код для подтверждения</label>
       <input type="password" id="pinCode" inputmode="numeric" pattern="[0-9]*" placeholder="Введите PIN-код" required>
 
@@ -115,18 +146,17 @@
       <label for="date">Дата</label>
       <input type="date" id="date" required>
 
-      <label for="statusField">Статус</label>
-      <select id="statusField">
-        <option value="доки" selected>доки</option>
-        <option value="отказ">отказ</option>
-        <option value="проведено">проведено</option>
-      </select>
-
       <label for="totalSum">Общая сумма заказа</label>
       <input type="number" id="totalSum" placeholder="Сумма" required>
 
-      <label for="track">Трек-номер</label>
-      <input type="text" id="track" placeholder="Трек или статус доставки" required>
+      <label for="track">Трек-номер и оплата</label>
+      <div class="track-row">
+        <input type="text" id="track" placeholder="Трек или статус" required>
+        <label class="checkbox-label" title="Отметить как получено в столбце G">
+          <input type="checkbox" id="isReceived">
+          <span>Получены</span>
+        </label>
+      </div>
     </div>
 
     <h3>Товары</h3>
@@ -155,7 +185,6 @@
 
     let globalProducts = [];
 
-    // Загрузка товаров из products.txt
     window.onload = function() {
       fetch('products.txt')
         .then(response => {
@@ -170,7 +199,6 @@
         .catch(() => console.log("products.txt не найден, доступен свободный ввод."));
     };
 
-    // Настройка автодополнения для полей ввода товаров
     document.addEventListener('input', function(e) {
       if (!e.target.classList.contains('item-name')) return;
       
@@ -187,7 +215,6 @@
       globalProducts.forEach(product => {
         if (product.toLowerCase().includes(val.toLowerCase())) {
           const itemDiv = document.createElement('div');
-          // Выделяем совпадение жирным (опционально, или просто текст)
           itemDiv.innerHTML = product;
           itemDiv.addEventListener('click', function() {
             input.value = product;
@@ -198,7 +225,6 @@
       });
     });
 
-    // Закрытие списков при клике вне поля
     document.addEventListener('click', function(e) {
       if (!e.target.classList.contains('item-name')) {
         closeAllLists();
@@ -256,12 +282,15 @@
         items.push({ name: itemNames[i].value, qty: itemQtys[i].value });
       }
 
+      const isReceivedChecked = document.getElementById('isReceived').checked;
+
       const payload = {
         warehouse: document.getElementById('warehouse').value,
         date: document.getElementById('date').value,
-        status: document.getElementById('statusField').value,
+        status: "доки", // Всегда передается "доки"
         totalSum: document.getElementById('totalSum').value,
         track: document.getElementById('track').value,
+        receivedStatus: isReceivedChecked ? "получены" : "", // Значение для столбца G
         items: items
       };
 
