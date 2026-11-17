@@ -196,7 +196,7 @@
         </div>
       </div>
 
-      <label for="totalSum">Общая сумма заказа</label>
+      <label for="totalSum">Общая сумма заказа (можно править вручную)</label>
       <input type="number" id="totalSum" placeholder="Итоговая сумма" step="any" required oninput="userManuallyEditedTotal = true;" onclick="this.select();">
 
       <label for="track">Трек-номер и оплата</label>
@@ -219,7 +219,7 @@
         <div class="qty-price-row">
           <div class="qty-price-field">
             <label>Количество</label>
-            <input type="number" class="item-qty" value="1" min="1" required oninput="calculateTotal()" onclick="this.select();">
+            <input type="number" class="item-qty" value="1" min="1" required oninput="calculateTotal()">
           </div>
           <div class="qty-price-field">
             <label>Цена за шт.</label>
@@ -355,7 +355,7 @@
         <div class="qty-price-row">
           <div class="qty-price-field">
             <label>Количество</label>
-            <input type="number" class="item-qty" value="1" min="1" required oninput="calculateTotal()" onclick="this.select();">
+            <input type="number" class="item-qty" value="1" min="1" required oninput="calculateTotal()">
           </div>
           <div class="qty-price-field">
             <label>Цена за шт.</label>
@@ -432,7 +432,7 @@
             <div class="qty-price-row">
               <div class="qty-price-field">
                 <label>Количество</label>
-                <input type="number" class="item-qty" value="1" min="1" required oninput="calculateTotal()" onclick="this.select();">
+                <input type="number" class="item-qty" value="1" min="1" required oninput="calculateTotal()">
               </div>
               <div class="qty-price-field">
                 <label>Цена за шт.</label>
