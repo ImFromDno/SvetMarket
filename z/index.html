@@ -39,6 +39,22 @@
       font-size: 15px;
       background: #fafafa;
     }
+    /* Сдвоенная строка для склада и даты в один ряд */
+    .warehouse-date-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 5px;
+    }
+    .warehouse-date-field {
+      flex: 1;
+    }
+    .warehouse-date-field label {
+      margin-top: 0;
+    }
+    .warehouse-date-field select,
+    .warehouse-date-field input {
+      margin-top: 5px;
+    }
     /* Строка для трек-номера и чекбокса в один ряд */
     .track-row {
       display: flex;
@@ -82,6 +98,21 @@
       border-left: 4px solid #1a73e8;
       position: relative;
     }
+    /* Сдвоенная строка для количества и цены */
+    .qty-price-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 5px;
+    }
+    .qty-price-field {
+      flex: 1;
+    }
+    .qty-price-field label {
+      margin-top: 0;
+    }
+    .qty-price-field input {
+      margin-top: 5px;
+    }
     .autocomplete-container {
       position: relative;
       width: 100%;
@@ -106,10 +137,23 @@
       cursor: pointer;
       font-size: 15px;
       border-bottom: 1px solid #f4f4f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     .autocomplete-items div:hover {
       background: #e8f0fe;
       color: #1a73e8;
+    }
+    .autocomplete-price {
+      font-size: 13px;
+      font-weight: 600;
+      color: #137333;
+      background: #e6f4ea;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 8px;
+      white-space: nowrap;
     }
     button {
       padding: 10px 15px;
@@ -135,19 +179,25 @@
       <label for="pinCode">PIN-код для подтверждения</label>
       <input type="password" id="pinCode" inputmode="numeric" pattern="[0-9]*" placeholder="Введите PIN-код" required>
 
-      <label for="warehouse">Склад</label>
-      <select id="warehouse" required>
-        <option value="Краснодар">Краснодар</option>
-        <option value="Краснодар Россия">Краснодар Россия</option>
-        <option value="Воронеж">Воронеж</option>
-        <option value="Ростов">Ростов</option>
-      </select>
-
-      <label for="date">Дата</label>
-      <input type="date" id="date" required>
+      <!-- Склад и Дата на одной строке -->
+      <div class="warehouse-date-row">
+        <div class="warehouse-date-field">
+          <label for="warehouse">Склад</label>
+          <select id="warehouse" required>
+            <option value="Краснодар">Краснодар</option>
+            <option value="Краснодар Россия">Краснодар Россия</option>
+            <option value="Воронеж">Воронеж</option>
+            <option value="Ростов">Ростов</option>
+          </select>
+        </div>
+        <div class="warehouse-date-field">
+          <label for="date">Дата</label>
+          <input type="date" id="date" required>
+        </div>
+      </div>
 
       <label for="totalSum">Общая сумма заказа</label>
-      <input type="number" id="totalSum" placeholder="Сумма" required>
+      <input type="number" id="totalSum" placeholder="Итоговая сумма" step="any" required oninput="userManuallyEditedTotal = true;" onclick="this.select();">
 
       <label for="track">Трек-номер и оплата</label>
       <div class="track-row">
@@ -166,8 +216,16 @@
         <div class="autocomplete-container">
           <input type="text" class="item-name" placeholder="Начните ввод..." autocomplete="off" required>
         </div>
-        <label style="margin-top: 10px;">Количество</label>
-        <input type="number" class="item-qty" value="1" min="1" required>
+        <div class="qty-price-row">
+          <div class="qty-price-field">
+            <label>Количество</label>
+            <input type="number" class="item-qty" value="1" min="1" required oninput="calculateTotal()">
+          </div>
+          <div class="qty-price-field">
+            <label>Цена за шт.</label>
+            <input type="number" class="item-price" placeholder="0" min="0" step="any" required oninput="calculateTotal()" onclick="this.select();">
+          </div>
+        </div>
       </div>
     </div>
     
@@ -184,7 +242,9 @@
     const CORRECT_PIN = '2326';
 
     let globalProducts = [];
+    let userManuallyEditedTotal = false;
 
+    // Загрузка и парсинг products.txt (формат: Название \ Цена)
     window.onload = function() {
       fetch('products.txt')
         .then(response => {
@@ -193,11 +253,34 @@
         })
         .then(text => {
           globalProducts = text.split('\n')
-            .map(item => item.trim())
-            .filter(item => item.length > 0);
+            .map(line => line.trim())
+            .filter(line => line.length > 0)
+            .map(line => {
+              const parts = line.split('\\');
+              const name = parts[0].trim();
+              const price = parts.length > 1 ? parts[1].trim() : '';
+              return { name, price };
+            });
         })
         .catch(() => console.log("products.txt не найден, доступен свободный ввод."));
     };
+
+    function calculateTotal() {
+      if (userManuallyEditedTotal) return;
+
+      const qtys = document.getElementsByClassName('item-qty');
+      const prices = document.getElementsByClassName('item-price');
+      let total = 0;
+
+      for (let i = 0; i < qtys.length; i++) {
+        const qty = parseFloat(qtys[i].value) || 0;
+        const price = parseFloat(prices[i].value) || 0;
+        total += qty * price;
+      }
+
+      total = Math.round(total * 100) / 100;
+      document.getElementById('totalSum').value = total > 0 ? total : '';
+    }
 
     document.addEventListener('input', function(e) {
       if (!e.target.classList.contains('item-name')) return;
@@ -213,11 +296,30 @@
       input.parentNode.appendChild(container);
 
       globalProducts.forEach(product => {
-        if (product.toLowerCase().includes(val.toLowerCase())) {
+        if (product.name.toLowerCase().includes(val.toLowerCase())) {
           const itemDiv = document.createElement('div');
-          itemDiv.innerHTML = product;
+          
+          const nameSpan = document.createElement('span');
+          nameSpan.textContent = product.name;
+          itemDiv.appendChild(nameSpan);
+
+          if (product.price) {
+            const priceSpan = document.createElement('span');
+            priceSpan.className = 'autocomplete-price';
+            priceSpan.textContent = product.price + ' ₽';
+            itemDiv.appendChild(priceSpan);
+          }
+
           itemDiv.addEventListener('click', function() {
-            input.value = product;
+            input.value = product.name;
+            
+            const row = input.closest('.item-row');
+            const priceInput = row.querySelector('.item-price');
+            if (priceInput && product.price) {
+              priceInput.value = product.price;
+            }
+            
+            calculateTotal();
             closeAllLists();
           });
           container.appendChild(itemDiv);
@@ -250,13 +352,25 @@
         <div class="autocomplete-container">
           <input type="text" class="item-name" placeholder="Начните ввод..." autocomplete="off" required>
         </div>
-        <label style="margin-top: 10px;">Количество</label>
-        <input type="number" class="item-qty" value="1" min="1" required>
+        <div class="qty-price-row">
+          <div class="qty-price-field">
+            <label>Количество</label>
+            <input type="number" class="item-qty" value="1" min="1" required oninput="calculateTotal()">
+          </div>
+          <div class="qty-price-field">
+            <label>Цена за шт.</label>
+            <input type="number" class="item-price" placeholder="0" min="0" step="any" required oninput="calculateTotal()" onclick="this.select();">
+          </div>
+        </div>
       `;
       container.appendChild(div);
+      calculateTotal();
     }
 
-    function removeItem(btn) { btn.parentElement.remove(); }
+    function removeItem(btn) { 
+      btn.parentElement.remove(); 
+      calculateTotal();
+    }
 
     document.getElementById('orderForm').addEventListener('submit', function(e) {
       e.preventDefault();
@@ -287,10 +401,10 @@
       const payload = {
         warehouse: document.getElementById('warehouse').value,
         date: document.getElementById('date').value,
-        status: "доки", // Всегда передается "доки"
+        status: "доки",
         totalSum: document.getElementById('totalSum').value,
         track: document.getElementById('track').value,
-        receivedStatus: isReceivedChecked ? "получены" : "", // Значение для столбца G
+        receivedStatus: isReceivedChecked ? "получены" : "",
         items: items
       };
 
@@ -308,16 +422,26 @@
         document.getElementById('orderForm').reset();
         document.getElementById('pinCode').value = ''; 
         document.getElementById('date').valueAsDate = new Date();
+        userManuallyEditedTotal = false;
         document.getElementById('itemsContainer').innerHTML = `
           <div class="item-row">
             <label>Товар</label>
             <div class="autocomplete-container">
               <input type="text" class="item-name" placeholder="Начните ввод..." autocomplete="off" required>
             </div>
-            <label style="margin-top: 10px;">Количество</label>
-            <input type="number" class="item-qty" value="1" min="1" required>
+            <div class="qty-price-row">
+              <div class="qty-price-field">
+                <label>Количество</label>
+                <input type="number" class="item-qty" value="1" min="1" required oninput="calculateTotal()">
+              </div>
+              <div class="qty-price-field">
+                <label>Цена за шт.</label>
+                <input type="number" class="item-price" placeholder="0" min="0" step="any" required oninput="calculateTotal()" onclick="this.select();">
+              </div>
+            </div>
           </div>
         `;
+        calculateTotal();
       })
       .catch(error => {
         statusDiv.style.backgroundColor = '#f8d7da';
