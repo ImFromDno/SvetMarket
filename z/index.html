@@ -3,58 +3,154 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
   <title>Учет отгрузок</title>
   <style>
+    :root {
+      --bg: #f4f4f9;
+      --card: #ffffff;
+      --field-bg: #fafafa;
+      --text: #333333;
+      --label-text: #555555;
+      --border: #dddddd;
+      --divider: #f4f4f9;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      --row-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+      --dropdown-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --accent: #1a73e8;
+      --accent-hover: #1557b0;
+      --hover-bg: #e8f0fe;
+      --success: #137333;
+      --success-bg: #e6f4ea;
+      --success-border: #ceead6;
+      --add-border: #34a853;
+      --danger: #c5221f;
+      --danger-bg: #fce8e6;
+      --disabled-bg: #cccccc;
+      --disabled-text: #666666;
+      --st-info-bg: #e2e3e5;
+      --st-info-text: #383d41;
+      --st-ok-bg: #d4edda;
+      --st-ok-text: #155724;
+      --st-err-bg: #f8d7da;
+      --st-err-text: #721c24;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --card: #1e293b;
+        --field-bg: #0b1220;
+        --text: #f8fafc;
+        --label-text: #94a3b8;
+        --border: #334155;
+        --divider: #1e293b;
+        --shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+        --row-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+        --dropdown-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+        --accent: #3b82f6;
+        --accent-hover: #2563eb;
+        --hover-bg: rgba(59, 130, 246, 0.16);
+        --success: #86efac;
+        --success-bg: rgba(34, 197, 94, 0.14);
+        --success-border: rgba(34, 197, 94, 0.35);
+        --add-border: #22c55e;
+        --danger: #fca5a5;
+        --danger-bg: rgba(239, 68, 68, 0.16);
+        --disabled-bg: #334155;
+        --disabled-text: #94a3b8;
+        --st-info-bg: rgba(148, 163, 184, 0.18);
+        --st-info-text: #e2e8f0;
+        --st-ok-bg: rgba(34, 197, 94, 0.16);
+        --st-ok-text: #86efac;
+        --st-err-bg: rgba(239, 68, 68, 0.16);
+        --st-err-text: #fecaca;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       max-width: 500px;
       margin: 20px auto;
       padding: 15px;
-      background: #f4f4f9;
-      color: #333;
+      background: var(--bg);
+      color: var(--text);
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
-    h2, h3 { text-align: center; color: #1a73e8; }
+
+    h2, h3 {
+      text-align: center;
+      color: var(--accent);
+    }
+
     .form-group {
-      background: white;
+      background: var(--card);
       padding: 20px;
       border-radius: 10px;
       margin-bottom: 15px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      box-shadow: var(--shadow);
     }
+
     label {
       display: block;
       margin-top: 12px;
       font-weight: 600;
       font-size: 13px;
-      color: #555;
+      color: var(--label-text);
       text-transform: uppercase;
     }
-    select, input[type="text"], input[type="number"], input[type="date"], input[type="password"] {
+
+    select,
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    input[type="password"] {
       width: 100%;
       padding: 10px 12px;
       margin-top: 5px;
-      border: 1px solid #ddd;
+      border: 1px solid var(--border);
       border-radius: 6px;
       box-sizing: border-box;
       font-size: 15px;
-      background: #fafafa;
+      background: var(--field-bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s ease, background-color 0.2s ease;
     }
+
+    select:focus,
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    input[type="date"]:focus,
+    input[type="password"]:focus {
+      border-color: var(--accent);
+    }
+
     /* Сдвоенная строка для склада и даты в один ряд */
     .warehouse-date-row {
       display: flex;
       gap: 10px;
       margin-top: 5px;
     }
+
     .warehouse-date-field {
       flex: 1;
+      min-width: 0;
     }
+
     .warehouse-date-field label {
       margin-top: 0;
     }
+
     .warehouse-date-field select,
     .warehouse-date-field input {
       margin-top: 5px;
     }
+
     /* Строка для трек-номера и чекбокса в один ряд */
     .track-row {
       display: flex;
@@ -62,10 +158,13 @@
       align-items: center;
       margin-top: 5px;
     }
+
     .track-row input[type="text"] {
       margin-top: 0;
       flex: 1;
+      min-width: 0;
     }
+
     .checkbox-label {
       display: flex;
       align-items: center;
@@ -74,52 +173,61 @@
       cursor: pointer;
       font-size: 13px;
       font-weight: 600;
-      color: #137333;
-      background: #e6f4ea;
+      color: var(--success);
+      background: var(--success-bg);
       padding: 10px 12px;
       border-radius: 6px;
-      border: 1px solid #ceead6;
+      border: 1px solid var(--success-border);
       white-space: nowrap;
       user-select: none;
     }
+
     .checkbox-label input[type="checkbox"] {
       width: 18px;
       height: 18px;
       margin: 0;
       cursor: pointer;
-      accent-color: #137333;
+      accent-color: #16a34a;
     }
+
     .item-row {
-      background: white;
+      background: var(--card);
       padding: 15px;
       border-radius: 10px;
       margin-bottom: 10px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-      border-left: 4px solid #1a73e8;
+      box-shadow: var(--row-shadow);
+      border-left: 4px solid var(--accent);
       position: relative;
     }
+
     /* Сдвоенная строка для количества и цены */
     .qty-price-row {
       display: flex;
       gap: 10px;
       margin-top: 5px;
     }
+
     .qty-price-field {
       flex: 1;
+      min-width: 0;
     }
+
     .qty-price-field label {
       margin-top: 0;
     }
+
     .qty-price-field input {
       margin-top: 5px;
     }
+
     .autocomplete-container {
       position: relative;
       width: 100%;
     }
+
     .autocomplete-items {
       position: absolute;
-      border: 1px solid #ddd;
+      border: 1px solid var(--border);
       border-top: none;
       border-bottom-left-radius: 6px;
       border-bottom-right-radius: 6px;
@@ -127,34 +235,39 @@
       top: 100%;
       left: 0;
       right: 0;
-      background: white;
+      background: var(--card);
+      color: var(--text);
       max-height: 150px;
       overflow-y: auto;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      box-shadow: var(--dropdown-shadow);
     }
+
     .autocomplete-items div {
       padding: 10px 12px;
       cursor: pointer;
       font-size: 15px;
-      border-bottom: 1px solid #f4f4f9;
+      border-bottom: 1px solid var(--divider);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
+
     .autocomplete-items div:hover {
-      background: #e8f0fe;
-      color: #1a73e8;
+      background: var(--hover-bg);
+      color: var(--accent);
     }
+
     .autocomplete-price {
       font-size: 13px;
       font-weight: 600;
-      color: #137333;
-      background: #e6f4ea;
+      color: var(--success);
+      background: var(--success-bg);
       padding: 2px 6px;
       border-radius: 4px;
       margin-left: 8px;
       white-space: nowrap;
     }
+
     button {
       padding: 10px 15px;
       border: none;
@@ -162,18 +275,71 @@
       cursor: pointer;
       font-weight: bold;
       font-size: 14px;
+      transition: background-color 0.15s ease, opacity 0.15s ease;
     }
-    .btn-add { background: #e6f4ea; color: #137333; width: 100%; margin-bottom: 15px; border: 1px dashed #34a853; }
-    .btn-remove { background: #fce8e6; color: #c5221f; padding: 5px 10px; float: right; }
-    .btn-submit { background: #1a73e8; color: white; width: 100%; font-size: 16px; padding: 14px; }
-    button:disabled { background: #ccc; cursor: not-allowed; }
-    #status { margin-top: 15px; padding: 12px; border-radius: 6px; text-align: center; font-weight: 500; display: none; }
+
+    .btn-add {
+      background: var(--success-bg);
+      color: var(--success);
+      width: 100%;
+      margin-bottom: 15px;
+      border: 1px dashed var(--add-border);
+    }
+
+    .btn-remove {
+      background: var(--danger-bg);
+      color: var(--danger);
+      padding: 5px 10px;
+      float: right;
+    }
+
+    .btn-submit {
+      background: var(--accent);
+      color: #ffffff;
+      width: 100%;
+      font-size: 16px;
+      padding: 14px;
+    }
+
+    .btn-submit:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    button:disabled {
+      background: var(--disabled-bg);
+      color: var(--disabled-text);
+      cursor: not-allowed;
+    }
+
+    #status {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+      font-weight: 500;
+      display: none;
+    }
+
+    #status.status-info {
+      background: var(--st-info-bg);
+      color: var(--st-info-text);
+    }
+
+    #status.status-ok {
+      background: var(--st-ok-bg);
+      color: var(--st-ok-text);
+    }
+
+    #status.status-err {
+      background: var(--st-err-bg);
+      color: var(--st-err-text);
+    }
   </style>
 </head>
 <body>
 
   <h2>📦 Учет отгрузок</h2>
-  
+
   <form id="orderForm">
     <div class="form-group">
       <label for="pinCode">PIN-код для подтверждения</label>
@@ -228,7 +394,7 @@
         </div>
       </div>
     </div>
-    
+
     <button type="button" class="btn-add" onclick="addItem()">+ Добавить еще товар</button>
     <button type="submit" id="submitBtn" class="btn-submit">Отправить в таблицу</button>
   </form>
@@ -243,6 +409,13 @@
 
     let globalProducts = [];
     let userManuallyEditedTotal = false;
+
+    function setStatus(type, text) {
+      const statusDiv = document.getElementById('status');
+      statusDiv.style.display = 'block';
+      statusDiv.className = `status-${type}`;
+      statusDiv.innerText = text;
+    }
 
     // Загрузка и парсинг products.txt (формат: Название \ Цена)
     window.onload = function() {
@@ -284,10 +457,10 @@
 
     document.addEventListener('input', function(e) {
       if (!e.target.classList.contains('item-name')) return;
-      
+
       const input = e.target;
       const val = input.value;
-      
+
       closeAllLists();
       if (!val) return;
 
@@ -298,7 +471,7 @@
       globalProducts.forEach(product => {
         if (product.name.toLowerCase().includes(val.toLowerCase())) {
           const itemDiv = document.createElement('div');
-          
+
           const nameSpan = document.createElement('span');
           nameSpan.textContent = product.name;
           itemDiv.appendChild(nameSpan);
@@ -312,13 +485,13 @@
 
           itemDiv.addEventListener('click', function() {
             input.value = product.name;
-            
+
             const row = input.closest('.item-row');
             const priceInput = row.querySelector('.item-price');
             if (priceInput && product.price) {
               priceInput.value = product.price;
             }
-            
+
             calculateTotal();
             closeAllLists();
           });
@@ -367,14 +540,14 @@
       calculateTotal();
     }
 
-    function removeItem(btn) { 
-      btn.parentElement.remove(); 
+    function removeItem(btn) {
+      btn.parentElement.remove();
       calculateTotal();
     }
 
     document.getElementById('orderForm').addEventListener('submit', function(e) {
       e.preventDefault();
-      
+
       const enteredPin = document.getElementById('pinCode').value;
       if (enteredPin !== CORRECT_PIN) {
         alert("❌ Неверный PIN-код!");
@@ -382,12 +555,8 @@
       }
 
       const btn = document.getElementById('submitBtn');
-      const statusDiv = document.getElementById('status');
       btn.disabled = true;
-      statusDiv.style.display = 'block';
-      statusDiv.style.backgroundColor = '#e2e3e5';
-      statusDiv.style.color = '#383d41';
-      statusDiv.innerText = "⏳ Отправка данных в таблицу...";
+      setStatus('info', "⏳ Отправка данных в таблицу...");
 
       const itemNames = document.getElementsByClassName('item-name');
       const itemQtys = document.getElementsByClassName('item-qty');
@@ -415,12 +584,10 @@
         body: JSON.stringify(payload)
       })
       .then(() => {
-        statusDiv.style.backgroundColor = '#d4edda';
-        statusDiv.style.color = '#155724';
-        statusDiv.innerText = "✅ Заказ успешно отправлен!";
-        
+        setStatus('ok', "✅ Заказ успешно отправлен!");
+
         document.getElementById('orderForm').reset();
-        document.getElementById('pinCode').value = ''; 
+        document.getElementById('pinCode').value = '';
         document.getElementById('date').valueAsDate = new Date();
         userManuallyEditedTotal = false;
         document.getElementById('itemsContainer').innerHTML = `
@@ -444,9 +611,7 @@
         calculateTotal();
       })
       .catch(error => {
-        statusDiv.style.backgroundColor = '#f8d7da';
-        statusDiv.style.color = '#721c24';
-        statusDiv.innerText = "❌ Ошибка отправки: " + error.message;
+        setStatus('err', "❌ Ошибка отправки: " + error.message);
       })
       .finally(() => {
         btn.disabled = false;
