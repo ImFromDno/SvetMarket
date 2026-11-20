@@ -3,71 +3,120 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
   <title>Поиск заказа и отметка «получены»</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --card-2: #0b1220;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --border: #334155;
-      --accent: #3b82f6;
-      --accent-hover: #2563eb;
-      --success: #22c55e;
-      --success-bg: rgba(34, 197, 94, 0.14);
-      --warn-bg: rgba(245, 158, 11, 0.14);
-      --err-bg: rgba(239, 68, 68, 0.14);
+      --bg: #f4f4f9;
+      --card: #ffffff;
+      --card-2: #fafafa;
+      --text: #333333;
+      --muted: #666666;
+      --border: #dddddd;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      --accent: #1a73e8;
+      --accent-hover: #1557b0;
+      --success: #137333;
+      --success-bg: #e6f4ea;
+      --success-border: #ceead6;
+      --success-btn: #1e8e3e;
+      --success-btn-hover: #187632;
+      --warn-text: #9a6700;
+      --warn-bg: #fef7e0;
+      --warn-border: #fde293;
+      --err-text: #c5221f;
+      --err-bg: #fce8e6;
+      --err-border: #fad2cf;
+      --info-text: #174ea6;
+      --info-bg: #e8f0fe;
+      --info-border: #d2e3fc;
+      --disabled-bg: #cccccc;
+      --disabled-text: #666666;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --card: #1e293b;
+        --card-2: #0b1220;
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --border: #334155;
+        --shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+        --accent: #3b82f6;
+        --accent-hover: #2563eb;
+        --success: #86efac;
+        --success-bg: rgba(34, 197, 94, 0.14);
+        --success-border: rgba(34, 197, 94, 0.35);
+        --success-btn: #16a34a;
+        --success-btn-hover: #15803d;
+        --warn-text: #fde68a;
+        --warn-bg: rgba(245, 158, 11, 0.14);
+        --warn-border: rgba(245, 158, 11, 0.35);
+        --err-text: #fecaca;
+        --err-bg: rgba(239, 68, 68, 0.14);
+        --err-border: rgba(239, 68, 68, 0.4);
+        --info-text: #bfdbfe;
+        --info-bg: rgba(59, 130, 246, 0.14);
+        --info-border: rgba(59, 130, 246, 0.35);
+        --disabled-bg: #334155;
+        --disabled-text: #94a3b8;
+      }
     }
 
     * {
       box-sizing: border-box;
     }
 
+    html {
+      overflow-y: auto;
+    }
+
     body {
-      margin: 0;
+      margin: 14px auto 20px;
+      padding: 0 14px;
+      max-width: 500px;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
-      padding: 20px 14px;
-    }
-
-    .container {
-      max-width: 640px;
-      margin: 0 auto;
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
 
     h1 {
       font-size: 1.35rem;
-      margin: 0 0 6px;
+      margin: 0 0 4px;
+      text-align: center;
+      color: var(--accent);
     }
 
     .subtitle {
       color: var(--muted);
-      font-size: 0.9rem;
-      margin: 0 0 18px;
+      font-size: 0.88rem;
+      margin: 0 0 14px;
+      text-align: center;
     }
 
     .search-box {
       background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 10px;
       padding: 14px;
+      box-shadow: var(--shadow);
       display: flex;
       gap: 10px;
+      align-items: center;
     }
 
     input[type="text"] {
       flex: 1;
       min-width: 0;
-      padding: 12px 14px;
-      border-radius: 10px;
+      padding: 10px 12px;
+      border-radius: 6px;
       border: 1px solid var(--border);
       background: var(--card-2);
       color: var(--text);
-      font-size: 1rem;
+      font-size: 15px;
       outline: none;
+      transition: border-color 0.15s ease, background-color 0.2s ease;
     }
 
     input[type="text"]:focus {
@@ -76,14 +125,14 @@
 
     button {
       border: none;
-      border-radius: 10px;
-      padding: 12px 18px;
-      font-size: 0.95rem;
-      font-weight: 600;
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: bold;
       cursor: pointer;
-      color: #fff;
+      color: #ffffff;
       background: var(--accent);
-      transition: background 0.15s ease, opacity 0.15s ease;
+      transition: background-color 0.15s ease, opacity 0.15s ease;
       white-space: nowrap;
     }
 
@@ -92,28 +141,34 @@
     }
 
     button:disabled {
-      opacity: 0.55;
+      background: var(--disabled-bg);
+      color: var(--disabled-text);
       cursor: not-allowed;
     }
 
     .btn-success {
-      background: #16a34a;
+      background: var(--success-btn);
+      color: #ffffff;
       width: 100%;
-      margin-top: 14px;
-      padding: 13px 16px;
+      margin-top: 12px;
+      padding: 11px 16px;
+      font-size: 15px;
     }
 
     .btn-success:hover:not(:disabled) {
-      background: #15803d;
+      background: var(--success-btn-hover);
     }
 
     .notice {
-      margin-top: 14px;
-      padding: 12px 14px;
-      border-radius: 12px;
-      font-size: 0.92rem;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-align: center;
       border: 1px solid transparent;
       display: none;
+      word-break: break-word;
     }
 
     .notice.show {
@@ -121,73 +176,77 @@
     }
 
     .notice.info {
-      background: rgba(59, 130, 246, 0.14);
-      border-color: rgba(59, 130, 246, 0.35);
-      color: #bfdbfe;
+      background: var(--info-bg);
+      border-color: var(--info-border);
+      color: var(--info-text);
     }
 
     .notice.error {
       background: var(--err-bg);
-      border-color: rgba(239, 68, 68, 0.4);
-      color: #fecaca;
+      border-color: var(--err-border);
+      color: var(--err-text);
     }
 
     .notice.ok {
       background: var(--success-bg);
-      border-color: rgba(34, 197, 94, 0.4);
-      color: #bbf7d0;
+      border-color: var(--success-border);
+      color: var(--success);
     }
 
     .results {
-      margin-top: 16px;
+      margin-top: 12px;
       display: grid;
-      gap: 12px;
+      gap: 10px;
     }
 
     .result-card {
       background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
+      border-radius: 10px;
+      border-left: 4px solid var(--accent);
+      padding: 14px;
+      box-shadow: var(--shadow);
     }
 
     .card-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .sheet-badge {
       background: var(--card-2);
       border: 1px solid var(--border);
-      padding: 5px 10px;
-      border-radius: 8px;
+      color: var(--text);
+      padding: 4px 9px;
+      border-radius: 6px;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.84rem;
     }
 
     .status-pill {
-      padding: 5px 10px;
+      padding: 4px 9px;
       border-radius: 999px;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 600;
       background: var(--warn-bg);
-      color: #fde68a;
+      color: var(--warn-text);
+      border: 1px solid var(--warn-border);
     }
 
     .status-pill.received {
       background: var(--success-bg);
-      color: #86efac;
+      color: var(--success);
+      border-color: var(--success-border);
     }
 
     .meta {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px 14px;
-      font-size: 0.9rem;
+      gap: 6px 12px;
+      font-size: 0.88rem;
     }
 
     .meta-item {
@@ -196,7 +255,7 @@
 
     .meta-item strong {
       color: var(--text);
-      font-weight: 500;
+      font-weight: 600;
     }
 
     .meta-full {
@@ -206,6 +265,8 @@
     @media (max-width: 480px) {
       .search-box {
         flex-direction: column;
+        align-items: stretch;
+        padding: 12px;
       }
       .meta {
         grid-template-columns: 1fr;
@@ -241,7 +302,41 @@
     const resultsBox = document.getElementById("resultsBox");
 
     function showNotice(type, text) {
-      noticeBox.className = `notice show ${type}`; noticeBox.textContent = text; }  function hideNotice() { noticeBox.className = "notice"; noticeBox.textContent = ""; }  function escapeHtml(value) { return String(value ?? "") .replace(/&/g, "&amp;") .replace(/</g, "&lt;") .replace(/>/g, "&gt;") .replace(/"/g, "&quot;"); }  async function postToScript(payload) { const response = await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });  if (!response.ok) { throw new Error(`Ошибка сети: ${response.status}`);
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = text;
+    }
+
+    function hideNotice() {
+      noticeBox.className = "notice";
+      noticeBox.textContent = "";
+    }
+
+    window.onerror = function (msg, url, line) {
+      showNotice("error", `Ошибка скрипта (стр. ${line}): ${msg}`);
+    };
+
+    window.addEventListener("unhandledrejection", function (event) {
+      const reason = event.reason && event.reason.message ? event.reason.message : String(event.reason);
+      showNotice("error", `Ошибка запроса: ${reason}`);
+    });
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    async function postToScript(payload) {
+      const response = await fetch(SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Ошибка сети: ${response.status}`);
       }
 
       return response.json();
@@ -270,4 +365,116 @@
 
         card.innerHTML = `
           <div class="card-top">
-            <span class="
+            <span class="sheet-badge">Лист: ${escapeHtml(item.sheetName)} · строка ${escapeHtml(item.row)}</span>
+            <span class="status-pill ${received ? "received" : ""}" id="statusBadge-${idx}">
+              ${escapeHtml(statusText)}
+            </span>
+          </div>
+          <div class="meta">
+            <div class="meta-item">Трек: <strong>${escapeHtml(item.track)}</strong></div>
+            <div class="meta-item">Дата: <strong>${escapeHtml(item.date || "—")}</strong></div>
+            <div class="meta-item">Сумма: <strong>${escapeHtml(item.totalSum !== "" ? item.totalSum : "—")}</strong></div>
+            <div class="meta-item">Статус заказа: <strong>${escapeHtml(item.orderStatus || "—")}</strong></div>
+            <div class="meta-item meta-full">Позиция: <strong>${escapeHtml(item.firstItem || "—")}</strong></div>
+          </div>
+          <button
+            type="button"
+            class="btn-success"
+            id="markBtn-${idx}"
+            ${received ? "disabled" : ""}
+          >
+            ${received ? "Уже отмечено «получены»" : "Отметить «получены»"}
+          </button>
+        `;
+
+        const markBtn = card.querySelector(`#markBtn-${idx}`);
+        markBtn.addEventListener("click", () => handleMarkReceived(item, idx));
+
+        resultsBox.appendChild(card);
+      });
+
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+
+    async function handleMarkReceived(item, idx) {
+      const btn = document.getElementById(`markBtn-${idx}`);
+      const badge = document.getElementById(`statusBadge-${idx}`);
+
+      btn.disabled = true;
+      btn.textContent = "Сохраняем...";
+
+      try {
+        const res = await postToScript({
+          action: "updateStatus",
+          sheetName: item.sheetName,
+          row: item.row,
+          track: item.track,
+          newStatus: "получены"
+        });
+
+        if (res.status === "Успешно") {
+          item.paymentStatus = "получены";
+          badge.textContent = "получены";
+          badge.classList.add("received");
+          btn.textContent = "Уже отмечено «получены»";
+          showNotice("ok", `Статус на листе «${item.sheetName}» (строка ${item.row}) обновлён на «получены».`);
+        } else {
+          btn.disabled = false;
+          btn.textContent = "Отметить «получены»";
+          showNotice("error", res.message || "Не удалось обновить статус.");
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = "Отметить «получены»";
+        showNotice("error", `Ошибка при обновлении: ${err.message}`);
+      }
+    }
+
+    async function runSearch() {
+      const track = trackInput.value.trim();
+      if (!track) {
+        showNotice("error", "Введите трек-номер.");
+        return;
+      }
+
+      searchBtn.disabled = true;
+      searchBtn.textContent = "Ищем...";
+      resultsBox.innerHTML = "";
+      showNotice("info", "Отправляем запрос...");
+
+      try {
+        const res = await postToScript({
+          action: "search",
+          track
+        });
+
+        if (res.status === "Успешно") {
+          renderMatches(res.matches);
+        } else {
+          showNotice("error", res.message || "Ошибка при поиске.");
+        }
+      } catch (err) {
+        showNotice("error", `Ошибка запроса: ${err.message}`);
+      } finally {
+        searchBtn.disabled = false;
+        searchBtn.textContent = "Найти";
+      }
+    }
+
+    trackInput.addEventListener("pointerdown", () => {
+      if (trackInput.value.length > 0) {
+        trackInput.value = "";
+        hideNotice();
+      }
+    });
+
+    searchBtn.addEventListener("click", runSearch);
+    trackInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        runSearch();
+      }
+    });
+  </script>
+</body>
+</html>
