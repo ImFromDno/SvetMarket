@@ -186,6 +186,13 @@
       box-shadow: none;
     }
 
+    .top-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
     .card {
       background: var(--card);
       padding: 20px;
@@ -195,14 +202,32 @@
       border: 1px solid var(--border);
     }
 
+    .top-grid .card {
+      margin-bottom: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-title {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
     .dropzone {
       border: 2px dashed var(--border);
       border-radius: 10px;
-      padding: 22px 18px;
+      padding: 20px 16px;
       text-align: center;
       background: var(--card-2);
       cursor: pointer;
       transition: border-color 0.15s ease, background-color 0.2s ease, transform 0.15s ease;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
     .dropzone:hover,
@@ -214,14 +239,14 @@
     }
 
     .dropzone-title {
-      font-size: 16px;
+      font-size: 15.5px;
       font-weight: 700;
       color: var(--text);
     }
 
     .dropzone-sub {
       margin-top: 5px;
-      font-size: 13.5px;
+      font-size: 13px;
       color: var(--muted);
     }
 
@@ -250,14 +275,47 @@
       color: var(--accent-hover);
     }
 
-    .checkbox-row {
-      margin-top: 12px;
-      padding: 11px 14px;
+    .field-group {
+      margin-bottom: 12px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    select.mode-select,
+    input.pattern-input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card-2);
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    select.mode-select:focus,
+    input.pattern-input:focus {
+      border-color: var(--accent);
+    }
+
+    .mode-box {
+      padding: 12px;
       border-radius: 8px;
       background: var(--card-2);
       border: 1px solid var(--border);
+    }
+
+    .checkbox-row {
+      padding: 4px 2px;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 10px;
       cursor: pointer;
       user-select: none;
@@ -266,13 +324,14 @@
     .checkbox-row input[type="checkbox"] {
       width: 18px;
       height: 18px;
+      margin-top: 2px;
       accent-color: var(--accent);
       cursor: pointer;
       flex-shrink: 0;
     }
 
     .checkbox-text {
-      font-size: 14.5px;
+      font-size: 14px;
       font-weight: 600;
       color: var(--text);
     }
@@ -283,6 +342,18 @@
       font-weight: 400;
       color: var(--muted);
       margin-top: 2px;
+    }
+
+    .pattern-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .pattern-hint {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-top: 4px;
     }
 
     .status-banner {
@@ -572,6 +643,12 @@
       margin-top: 18px;
     }
 
+    @media (max-width: 780px) {
+      .top-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (max-width: 560px) {
       .summary-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -611,38 +688,104 @@
     </div>
   </header>
 
-  <section class="card" aria-label="Загрузка архива и правила склейки">
-    <div
-      id="dropZone"
-      class="dropzone"
-      role="button"
-      tabindex="0"
-      aria-label="Перетащите ZIP-архив с таблицами или выберите файл"
-    >
-      <input type="file" id="zipInput" accept=".zip,application/zip,application/x-zip-compressed" hidden />
-      <input type="file" id="tablesInput" accept=".xlsx,.xls,.csv" multiple hidden />
+  <div class="top-grid">
+    <section class="card" aria-label="Загрузка архива">
+      <div class="panel-title">Загрузка архива и таблиц</div>
+      <div
+        id="dropZone"
+        class="dropzone"
+        role="button"
+        tabindex="0"
+        aria-label="Перетащите ZIP-архив с таблицами или выберите файл"
+      >
+        <input type="file" id="zipInput" accept=".zip,application/zip,application/x-zip-compressed" hidden />
+        <input type="file" id="tablesInput" accept=".xlsx,.xls,.csv" multiple hidden />
 
-      <div class="dropzone-title">Перетащите ZIP-архив сюда или нажмите для выбора</div>
-      <div class="dropzone-sub">
-        Локальная обработка в браузере (без отправки на сервер) · Шапка таблицы пропускается автоматически
+        <div class="dropzone-title">Перетащите ZIP-архив сюда или нажмите для выбора</div>
+        <div class="dropzone-sub">
+          Локальная обработка в браузере (без отправки на сервер) · Шапка таблицы пропускается автоматически
+        </div>
+        <div class="dropzone-actions">
+          <button type="button" class="link-btn" id="pickSingleTablesBtn">Или выбрать таблицы (.xlsx / .xls / .csv) напрямую</button>
+        </div>
       </div>
-      <div class="dropzone-actions">
-        <button type="button" class="link-btn" id="pickSingleTablesBtn">Или выбрать таблицы (.xlsx / .xls / .csv) напрямую</button>
-      </div>
-    </div>
 
-    <label class="checkbox-row" for="skipEmptyCol2">
-      <input type="checkbox" id="skipEmptyCol2" checked />
-      <div>
-        <span class="checkbox-text">Пропускать таблицы, где 2-й столбец (B) пустой</span>
-        <span class="checkbox-sub">Файлы без значений во 2-м столбце строк данных не попадают в склейку</span>
+      <div id="statusBanner" class="status-banner" role="status">
+        Ожидание ZIP-архива с таблицами агрегации для «Честного ЗНАКа» и 1С.
       </div>
-    </label>
+    </section>
 
-    <div id="statusBanner" class="status-banner" role="status">
-      Ожидание ZIP-архива с таблицами агрегации для «Честного ЗНАКа» и 1С.
-    </div>
-  </section>
+    <section class="card" aria-label="Настройка режима">
+      <div class="panel-title">Настройка режима</div>
+
+      <div class="field-group">
+        <label class="field-label" for="modeSelect">Режим обработки строк</label>
+        <select id="modeSelect" class="mode-select">
+          <option value="factory_agregator">Обработка агрегации завода</option>
+          <option value="collect_from_file">Собрать агрегацию из файла</option>
+          <option value="extract_boxes">Извлечь коробки</option>
+        </select>
+      </div>
+
+      <div id="settingsFactoryBox" class="mode-box">
+        <label class="checkbox-row" for="skipEmptyCol2">
+          <input type="checkbox" id="skipEmptyCol2" checked />
+          <div>
+            <span class="checkbox-text">Пропускать таблицы, где 2-й столбец (B) пустой</span>
+            <span class="checkbox-sub">Файлы без значений во 2-м столбце строк данных не попадают в склейку</span>
+          </div>
+        </label>
+      </div>
+
+      <div id="settingsCollectBox" class="mode-box" hidden>
+        <div class="pattern-grid">
+          <div>
+            <label class="field-label" for="codePrefixesInput">Начало кода (через запятую)</label>
+            <input
+              type="text"
+              id="codePrefixesInput"
+              class="pattern-input"
+              value="01, (01)"
+            />
+            <div class="pattern-hint">Строки с кодами накапливаются до встречи коробки</div>
+          </div>
+          <div>
+            <label class="field-label" for="boxPrefixesInput">Начало коробки (через запятую)</label>
+            <input
+              type="text"
+              id="boxPrefixesInput"
+              class="pattern-input"
+              value="00, (00), (0)0"
+            />
+            <div class="pattern-hint">Коробка уходит из 1-го столбца и прописывается в столбец B всем предыдущим кодам</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="settingsExtractBox" class="mode-box" hidden>
+        <div class="pattern-grid">
+          <div>
+            <label class="field-label" for="extractColSelect">Откуда брать коробки</label>
+            <select id="extractColSelect" class="mode-select">
+              <option value="both">Столбцы A и B</option>
+              <option value="colA">Только столбец A</option>
+              <option value="colB">Только столбец B</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="extractBoxPrefixesInput">Начало коробки (через запятую)</label>
+            <input
+              type="text"
+              id="extractBoxPrefixesInput"
+              class="pattern-input"
+              value="00, (00), (0)0"
+            />
+            <div class="pattern-hint">Повторяющиеся коробки (например, из столбца B) попадают в результат без дублей</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
 
   <section class="summary-card" aria-label="Сводка по обработке">
     <div class="summary-grid">
@@ -733,7 +876,18 @@
       const zipInputEl = document.getElementById("zipInput");
       const tablesInputEl = document.getElementById("tablesInput");
       const pickSingleTablesBtnEl = document.getElementById("pickSingleTablesBtn");
+
+      const modeSelectEl = document.getElementById("modeSelect");
+      const settingsFactoryBoxEl = document.getElementById("settingsFactoryBox");
+      const settingsCollectBoxEl = document.getElementById("settingsCollectBox");
+      const settingsExtractBoxEl = document.getElementById("settingsExtractBox");
+
       const skipEmptyCol2El = document.getElementById("skipEmptyCol2");
+      const codePrefixesInputEl = document.getElementById("codePrefixesInput");
+      const boxPrefixesInputEl = document.getElementById("boxPrefixesInput");
+      const extractColSelectEl = document.getElementById("extractColSelect");
+      const extractBoxPrefixesInputEl = document.getElementById("extractBoxPrefixesInput");
+
       const statusBannerEl = document.getElementById("statusBanner");
 
       const statTotalFilesEl = document.getElementById("statTotalFiles");
@@ -833,6 +987,20 @@
         return copy.slice(0, end);
       }
 
+      function parsePrefixList(rawText, fallback) {
+        const source = String(rawText || "").trim();
+        const items = (source ? source.split(",") : fallback)
+          .map((s) => s.trim())
+          .filter(Boolean);
+        return items.sort((a, b) => b.length - a.length);
+      }
+
+      function matchesAnyPrefix(value, prefixes) {
+        const str = String(value || "").trim();
+        if (!str || !Array.isArray(prefixes) || prefixes.length === 0) return false;
+        return prefixes.some((prefix) => str.startsWith(prefix));
+      }
+
       /* ================= Парсинг таблиц через SheetJS ================= */
 
       function parseTableFromArrayBuffer(buffer, name) {
@@ -887,10 +1055,93 @@
         };
       }
 
-      /* ================= Агрегация и рендер ================= */
+      /* ================= Обработка режимов ================= */
+
+      function processCollectFromFileRows(dataRows, codePrefixes, boxPrefixes) {
+        const pendingCodes = [];
+        const mappedLines = [];
+        let boxesCount = 0;
+        let orphanCodesCount = 0;
+
+        for (const row of dataRows) {
+          const firstVal = Array.isArray(row) && row.length > 0 ? normalizeCell(row[0]) : "";
+          if (!firstVal) continue;
+
+          if (matchesAnyPrefix(firstVal, boxPrefixes)) {
+            boxesCount++;
+            if (pendingCodes.length > 0) {
+              for (const codeVal of pendingCodes) {
+                mappedLines.push(`${codeVal}\t${firstVal}`);
+              }
+              pendingCodes.length = 0;
+            }
+          } else if (matchesAnyPrefix(firstVal, codePrefixes)) {
+            pendingCodes.push(firstVal);
+          } else {
+            pendingCodes.push(firstVal);
+          }
+        }
+
+        if (pendingCodes.length > 0) {
+          orphanCodesCount = pendingCodes.length;
+          for (const codeVal of pendingCodes) {
+            mappedLines.push(`${codeVal}\t`);
+          }
+        }
+
+        return {
+          lines: mappedLines,
+          boxesCount,
+          orphanCodesCount,
+        };
+      }
+
+      function processExtractBoxesRows(dataRows, boxPrefixes, colSource) {
+        const seen = new Set();
+        const uniqueBoxes = [];
+        let rawMatchesCount = 0;
+
+        const colIndices =
+          colSource === "colA" ? [0] : colSource === "colB" ? [1] : [0, 1];
+
+        for (const row of dataRows) {
+          if (!Array.isArray(row)) continue;
+          for (const idx of colIndices) {
+            const val = idx < row.length ? normalizeCell(row[idx]) : "";
+            if (!val) continue;
+            if (matchesAnyPrefix(val, boxPrefixes)) {
+              rawMatchesCount++;
+              if (!seen.has(val)) {
+                seen.add(val);
+                uniqueBoxes.push(val);
+              }
+            }
+          }
+        }
+
+        return {
+          lines: uniqueBoxes,
+          rawMatchesCount,
+        };
+      }
+
+      function syncModePanels() {
+        const mode = modeSelectEl.value;
+        settingsFactoryBoxEl.hidden = mode !== "factory_agregator";
+        settingsCollectBoxEl.hidden = mode !== "collect_from_file";
+        settingsExtractBoxEl.hidden = mode !== "extract_boxes";
+      }
 
       function rebuildAggregation() {
+        syncModePanels();
+
+        const mode = modeSelectEl.value;
         const filterCol2 = skipEmptyCol2El.checked;
+        const codePrefixes = parsePrefixList(codePrefixesInputEl.value, ["01", "(01)"]);
+        const boxPrefixes = parsePrefixList(boxPrefixesInputEl.value, ["00", "(00)", "(0)0"]);
+        const extractBoxPrefixes = parsePrefixList(extractBoxPrefixesInputEl.value, ["00", "(00)", "(0)0"]);
+        const extractColSource = extractColSelectEl.value;
+
         const mergedLines = [];
         const reportItems = [];
 
@@ -910,30 +1161,99 @@
             continue;
           }
 
-          if (filterCol2 && !item.hasCol2Values) {
-            skippedCount++;
+          const fileRowsCount = item.totalNonEmptyRows || item.dataRows.length + 1;
+
+          if (mode === "factory_agregator") {
+            if (filterCol2 && !item.hasCol2Values) {
+              skippedCount++;
+              reportItems.push({
+                name: item.name,
+                included: false,
+                fileRowsCount,
+                takenRowsCount: 0,
+                note: "Пустой 2-й столбик (столбец В) — файл не требует агрегации",
+              });
+              continue;
+            }
+
+            includedCount++;
+            for (const row of item.dataRows) {
+              mergedLines.push(row.join("\t"));
+            }
+
             reportItems.push({
               name: item.name,
-              included: false,
-              fileRowsCount: item.totalNonEmptyRows || item.dataRows.length + 1,
-              takenRowsCount: 0,
-              note: "Пустой 2-й столбик (столбец В) — файл не требует агрегации",
+              included: true,
+              fileRowsCount,
+              takenRowsCount: item.dataRows.length,
+              note: "Принят (шапка пропущена, взяты строки данных)",
             });
-            continue;
-          }
+          } else if (mode === "collect_from_file") {
+            const boxRes = processCollectFromFileRows(item.dataRows, codePrefixes, boxPrefixes);
 
-          includedCount++;
-          for (const row of item.dataRows) {
-            mergedLines.push(row.join("\t"));
-          }
+            if (boxRes.lines.length === 0) {
+              skippedCount++;
+              reportItems.push({
+                name: item.name,
+                included: false,
+                fileRowsCount,
+                takenRowsCount: 0,
+                note: "Нет кодов для сборки агрегации",
+              });
+              continue;
+            }
 
-          reportItems.push({
-            name: item.name,
-            included: true,
-            fileRowsCount: item.totalNonEmptyRows || item.dataRows.length + 1,
-            takenRowsCount: item.dataRows.length,
-            note: "Принят (шапка пропущена, взяты строки данных)",
-          });
+            includedCount++;
+            for (const line of boxRes.lines) {
+              mergedLines.push(line);
+            }
+
+            let note = `Принят (коробок: ${boxRes.boxesCount}, строк: ${boxRes.lines.length})`;
+            if (boxRes.orphanCodesCount > 0) {
+              note += ` · без коробки в конце: ${boxRes.orphanCodesCount}`;
+            }
+
+            reportItems.push({
+              name: item.name,
+              included: true,
+              fileRowsCount,
+              takenRowsCount: boxRes.lines.length,
+              note,
+            });
+          } else if (mode === "extract_boxes") {
+            const extRes = processExtractBoxesRows(item.dataRows, extractBoxPrefixes, extractColSource);
+
+            if (extRes.lines.length === 0) {
+              skippedCount++;
+              reportItems.push({
+                name: item.name,
+                included: false,
+                fileRowsCount,
+                takenRowsCount: 0,
+                note: "Коробки по заданным паттернам не найдены",
+              });
+              continue;
+            }
+
+            includedCount++;
+            for (const boxCode of extRes.lines) {
+              mergedLines.push(boxCode);
+            }
+
+            const dupSkipped = extRes.rawMatchesCount - extRes.lines.length;
+            const note =
+              dupSkipped > 0
+                ? `Принят (уникальных коробок: ${extRes.lines.length}, убрано повторов: ${dupSkipped})`
+                : `Принят (уникальных коробок: ${extRes.lines.length})`;
+
+            reportItems.push({
+              name: item.name,
+              included: true,
+              fileRowsCount,
+              takenRowsCount: extRes.lines.length,
+              note,
+            });
+          }
         }
 
         const outputText = mergedLines.join("\n");
@@ -1195,7 +1515,12 @@
         }
       });
 
+      modeSelectEl.addEventListener("change", rebuildAggregation);
       skipEmptyCol2El.addEventListener("change", rebuildAggregation);
+      codePrefixesInputEl.addEventListener("input", rebuildAggregation);
+      boxPrefixesInputEl.addEventListener("input", rebuildAggregation);
+      extractColSelectEl.addEventListener("change", rebuildAggregation);
+      extractBoxPrefixesInputEl.addEventListener("input", rebuildAggregation);
     })();
   </script>
 </body>
