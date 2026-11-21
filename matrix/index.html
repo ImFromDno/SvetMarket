@@ -695,7 +695,7 @@
         justify-content: center;
         width: 100%;
         height: 100%;
-        padding: var(--print-pad-y, 1mm) var(--print-pad-x, 1.5mm);
+        padding: var(--print-pad-y, 0.8mm) var(--print-pad-x, 1.2mm);
         transform: translate(var(--print-offset-x, 0mm), var(--print-offset-y, 0mm));
       }
 
@@ -703,8 +703,8 @@
         background: #ffffff !important;
         padding: 0 !important;
         border-radius: 0 !important;
-        width: var(--print-matrix-size, 17mm) !important;
-        height: var(--print-matrix-size, 17mm) !important;
+        width: var(--print-matrix-size, 14.5mm) !important;
+        height: var(--print-matrix-size, 14.5mm) !important;
         flex-shrink: 0;
       }
 
@@ -714,16 +714,16 @@
         font-weight: 700;
         line-height: 1.1;
         color: #000000;
-        margin-top: 0.6mm;
+        margin-top: 0.4mm;
       }
 
       .print-name {
         display: block !important;
-        font-size: calc(var(--print-font-size, 6.5pt) * 0.88);
+        font-size: calc(var(--print-font-size, 6.5pt) * 0.92);
         font-weight: 600;
         line-height: 1.12;
         color: #000000;
-        margin-top: 0.4mm;
+        margin-top: 0.35mm;
         max-width: 100%;
         white-space: nowrap;
         overflow: hidden;
@@ -733,10 +733,10 @@
       .print-raw {
         display: block !important;
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        font-size: calc(var(--print-font-size, 6.5pt) * 0.78);
+        font-size: calc(var(--print-font-size, 6.5pt) * 0.82);
         line-height: 1.08;
         color: #000000;
-        margin-top: 0.4mm;
+        margin-top: 0.35mm;
         max-width: 100%;
         white-space: nowrap;
         overflow: hidden;
@@ -753,10 +753,10 @@
 </head>
 <body>
   <header class="page-header">
-    <div class="ts-bar" aria-label="Tom Studio — Project Matrix · v8.1">
+    <div class="ts-bar" aria-label="Tom Studio — Project Matrix · v9">
       <span class="ts-brand">Tom Studio</span>
       <span class="ts-divider" aria-hidden="true"></span>
-      <span class="ts-project">Project Matrix · v8</span>
+      <span class="ts-project">Project Matrix · v9</span>
     </div>
   </header>
 
@@ -829,7 +829,7 @@
         </div>
         <div class="mini-field">
           <span>Размер матрицы (мм)</span>
-          <input type="number" id="matrixSizeMm" value="17" min="6" max="120" step="0.5" />
+          <input type="number" id="matrixSizeMm" value="15" min="6" max="120" step="0.5" />
         </div>
       </div>
 
@@ -932,11 +932,11 @@
   <div class="grid" id="outputGrid"></div>
 
   <footer class="page-footer">
-    <div class="ts-bar" aria-label="Tom Studio — Project Matrix · v8">
+    <div class="ts-bar" aria-label="Tom Studio — Project Matrix · v9">
       <span class="ts-brand">Tom Studio</span>
       <button type="button" class="bulb-btn" id="bulbToggle" aria-label="Переключить тему" title="Переключить тему">💡</button>
       <span class="ts-divider" aria-hidden="true"></span>
-      <span class="ts-project">Project Matrix · v8</span>
+      <span class="ts-project">Project Matrix · v9</span>
     </div>
   </footer>
 
@@ -1676,17 +1676,44 @@
       return annotations;
     }
 
+    function computeSafeLabelLayout(wMm, hMm, requestedMatrixMm, hasTop, hasBottom) {
+      const edgePadMm = 0.7;
+      const topBandMm = hasTop ? 2.6 : 0;
+      const bottomBandMm = hasBottom ? 5.2 : 0;
+      const gapMm = 0.45;
+
+      const topReserve = edgePadMm + topBandMm + (hasTop ? gapMm : 0);
+      const bottomReserve = edgePadMm + bottomBandMm + (hasBottom ? gapMm : 0);
+
+      const maxByHeight = Math.max(5.5, hMm - topReserve - bottomReserve);
+      const maxByWidth = Math.max(5.5, wMm - edgePadMm * 2);
+      const safeMatrixMm = Math.max(5.5, Math.min(requestedMatrixMm, maxByHeight, maxByWidth));
+
+      return {
+        edgePadMm,
+        topBandMm,
+        bottomBandMm,
+        gapMm,
+        safeMatrixMm
+      };
+    }
+
     function syncPrintCssVars() {
       const w = Math.max(15, Number(document.getElementById('labelWidthMm').value) || 43);
       const h = Math.max(10, Number(document.getElementById('labelHeightMm').value) || 25);
-      const mSize = Math.max(6, Math.min(w - 2, h - 2, Number(document.getElementById('matrixSizeMm').value) || 17));
+      const reqM = Math.max(6, Number(document.getElementById('matrixSizeMm').value) || 15);
+      const showMarkers = document.getElementById('showMarkersCheck').checked;
+      const showName = document.getElementById('showProductNameCheck').checked;
+      const showRaw = document.getElementById('showRawCodeCheck').checked;
+
+      const layout = computeSafeLabelLayout(w, h, reqM, showMarkers, showName || showRaw);
       const ox = Number(document.getElementById('offsetXMm').value) || 0;
       const oy = Number(document.getElementById('offsetYMm').value) || 0;
 
       const rootStyle = document.documentElement.style;
       rootStyle.setProperty('--print-page-w', `${w}mm`);
       rootStyle.setProperty('--print-page-h', `${h}mm`);
-      rootStyle.setProperty('--print-matrix-size', `${mSize}mm`);
+      rootStyle.setProperty('--print-matrix-size', `${layout.safeMatrixMm.toFixed(2)}mm`);
       rootStyle.setProperty('--print-offset-x', `${ox}mm`);
       rootStyle.setProperty('--print-offset-y', `${oy}mm`);
     }
@@ -1810,16 +1837,6 @@
 
     /* ================= DEFLATE (FlateDecode) + 360 DPI кириллица в PDF ================= */
 
-    const CRC32_TABLE = (() => {
-      const t = new Uint32Array(256);
-      for (let n = 0; n < 256; n++) {
-        let c = n;
-        for (let k = 0; k < 8; k++) c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
-        t[n] = c >>> 0;
-      }
-      return t;
-    })();
-
     function adler32(bytes) {
       let a = 1, b = 0;
       for (let i = 0; i < bytes.length; i++) {
@@ -1829,7 +1846,6 @@
       return ((b << 16) | a) >>> 0;
     }
 
-    // Несжатые DEFLATE-блоки (BTYPE=00) в обёртке zlib — быстро и гарантированно валидно для /FlateDecode
     function zlibStoreCompress(rawBytes) {
       const parts = [];
       parts.push(new Uint8Array([0x78, 0x01]));
@@ -1869,41 +1885,108 @@
       return out;
     }
 
-    function renderTextLabelBitmap360Dpi(text, maxWidthMm, fontPt, bold = true) {
-      const dpi = 360;
-      const pxPerMm = dpi / 25.4;
-      const fontPx = Math.max(10, Math.round((fontPt * 72 / 25.4) * pxPerMm / 2.8346));
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-
-      const fontSpec = `${bold ? '700' : '600'} ${fontPx}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif`;
-      ctx.font = fontSpec;
-
-      let displayText = String(text || '').trim();
-      const maxPx = Math.max(24, Math.floor(maxWidthMm * pxPerMm));
-      if (ctx.measureText(displayText).width > maxPx) {
-        while (displayText.length > 1 && ctx.measureText(displayText + '…').width > maxPx) {
-          displayText = displayText.slice(0, -1);
-        }
-        displayText += '…';
+    function wrapTextToLines(ctx, text, maxPx, maxLines = 2) {
+      const clean = String(text || '').trim().replace(/\s+/g, ' ');
+      if (!clean) return [];
+      if (ctx.measureText(clean).width <= maxPx) {
+        return [clean];
       }
 
-      const metrics = ctx.measureText(displayText);
-      const textW = Math.max(8, Math.ceil(metrics.width + fontPx * 0.25));
-      const textH = Math.max(12, Math.ceil(fontPx * 1.32));
+      const words = clean.split(' ');
+      const lines = [];
+      let current = '';
 
+      for (let i = 0; i < words.length; i++) {
+        const candidate = current ? `${current} ${words[i]}` : words[i];
+        if (ctx.measureText(candidate).width <= maxPx) {
+          current = candidate;
+        } else {
+          if (current) {
+            lines.push(current);
+            current = words[i];
+          } else {
+            lines.push(words[i]);
+            current = '';
+          }
+          if (lines.length === maxLines) break;
+        }
+      }
+      if (current && lines.length < maxLines) {
+        lines.push(current);
+      }
+
+      // Если остаток не влез — подрезаем последнюю строку с многоточием
+      const joinedCount = lines.join(' ').length;
+      const hasOverflow = joinedCount < clean.length || (current && lines.length === maxLines && !lines.join(' ').endsWith(current));
+      if (hasOverflow && lines.length > 0) {
+        let last = lines[lines.length - 1];
+        while (last.length > 1 && ctx.measureText(last + '…').width > maxPx) {
+          last = last.slice(0, -1);
+        }
+        lines[lines.length - 1] = last + '…';
+      }
+
+      return lines;
+    }
+
+    function renderTextLabelBitmap360Dpi(text, maxWidthMm, maxHeightMm, preferredFontPt, bold = true, maxLines = 2) {
+      const dpi = 360;
+      const pxPerMm = dpi / 25.4;
+      const maxPx = Math.max(36, Math.floor(maxWidthMm * pxPerMm));
+      const maxBoxPx = Math.max(16, Math.floor(maxHeightMm * pxPerMm));
+
+      let fontPt = preferredFontPt;
+      let fontPx = Math.max(12, Math.round(fontPt * (dpi / 72)));
+      let lines = [];
+
+      const measureCanvas = document.createElement('canvas');
+      const mCtx = measureCanvas.getContext('2d');
+
+      for (let pt = preferredFontPt; pt >= 4.2; pt -= 0.4) {
+        const px = Math.max(12, Math.round(pt * (dpi / 72)));
+        mCtx.font = `${bold ? '700' : '600'} ${px}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif`;
+        const candidateLines = wrapTextToLines(mCtx, text, maxPx, maxLines);
+        const lineHeightPx = Math.ceil(px * 1.16);
+        const totalLinesPx = candidateLines.length * lineHeightPx;
+
+        fontPt = pt;
+        fontPx = px;
+        lines = candidateLines;
+
+        if (!candidateLines.some(l => l.endsWith('…')) && totalLinesPx <= maxBoxPx) {
+          break;
+        }
+        if (totalLinesPx <= maxBoxPx && pt <= preferredFontPt - 0.8) {
+          break;
+        }
+      }
+
+      if (!lines.length) {
+        lines = [String(text || '').trim()];
+      }
+
+      const lineHeightPx = Math.ceil(fontPx * 1.16);
+      const canvas = document.createElement('canvas');
+      const textW = maxPx;
+      const textH = Math.max(14, Math.min(maxBoxPx, lines.length * lineHeightPx + Math.ceil(fontPx * 0.18)));
       canvas.width = textW;
       canvas.height = textH;
 
-      const ctx2 = canvas.getContext('2d');
-      ctx2.clearRect(0, 0, textW, textH);
-      ctx2.font = fontSpec;
-      ctx2.fillStyle = '#000000';
-      ctx2.textBaseline = 'middle';
-      ctx2.textAlign = 'center';
-      ctx2.fillText(displayText, textW / 2, textH / 2 + fontPx * 0.04);
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, textW, textH);
+      ctx.font = `${bold ? '700' : '600'} ${fontPx}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif`;
+      ctx.fillStyle = '#000000';
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'center';
 
-      const imgData = ctx2.getImageData(0, 0, textW, textH).data;
+      const blockHeight = lines.length * lineHeightPx;
+      const startY = (textH - blockHeight) / 2 + lineHeightPx / 2;
+
+      for (let i = 0; i < lines.length; i++) {
+        ctx.fillText(lines[i], textW / 2, startY + i * lineHeightPx + fontPx * 0.03);
+      }
+
+      const imgData = ctx.getImageData(0, 0, textW, textH).data;
       const rgbRaw = new Uint8Array(textW * textH * 3);
       const alphaRaw = new Uint8Array(textW * textH);
 
@@ -1935,30 +2018,37 @@
 
       const wMm = Math.max(15, Number(document.getElementById('labelWidthMm').value) || 43);
       const hMm = Math.max(10, Number(document.getElementById('labelHeightMm').value) || 25);
-      const mMm = Math.max(6, Math.min(wMm - 2, hMm - 2, Number(document.getElementById('matrixSizeMm').value) || 17));
+      const reqMatrixMm = Math.max(6, Number(document.getElementById('matrixSizeMm').value) || 15);
       const oxMm = Number(document.getElementById('offsetXMm').value) || 0;
       const oyMm = Number(document.getElementById('offsetYMm').value) || 0;
+
+      const showMarkers = document.getElementById('showMarkersCheck').checked;
+      const showName = document.getElementById('showProductNameCheck').checked;
+      const showRaw = document.getElementById('showRawCodeCheck').checked;
+
+      const layout = computeSafeLabelLayout(wMm, hMm, reqMatrixMm, showMarkers, showName || showRaw);
 
       const mmToPt = (mm) => (mm * 72) / 25.4;
       const pageW = mmToPt(wMm);
       const pageH = mmToPt(hMm);
-      const matrixPt = mmToPt(mMm);
+      const matrixPt = mmToPt(layout.safeMatrixMm);
       const shiftXPt = mmToPt(oxMm);
       const shiftYPt = mmToPt(oyMm);
 
-      // Кэш повторяющихся подписей (360 DPI + FlateDecode + /SMask)
       const captionCache = new Map();
-      function getOrCreateCaptionXObject(text, maxWidthMm, fontPt, bold) {
-        const key = `${bold ? 'B' : 'R'}|${fontPt}|${maxWidthMm.toFixed(2)}|${text}`;
+      function getOrCreateCaptionXObject(text, maxWidthMm, maxHeightMm, fontPt, bold, maxLines) {
+        const key = `${bold ? 'B' : 'R'}|${fontPt}|${maxLines}|${maxWidthMm.toFixed(2)}|${maxHeightMm.toFixed(2)}|${text}`;
         if (captionCache.has(key)) {
           return captionCache.get(key);
         }
 
-        const bmp = renderTextLabelBitmap360Dpi(text, maxWidthMm, fontPt, bold);
-        const smaskId = addObj(
-          `<< /Type /XObject /Subtype /Image /Width ${bmp.width} /Height ${bmp.height} /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /FlateDecode /Length ${bmp.alphaZlib.length} >>\nstream\n`
-        );
-        objects[smaskId - 1] = { binHeader: `<< /Type /XObject /Subtype /Image /Width ${bmp.width} /Height ${bmp.height} /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /FlateDecode /Length ${bmp.alphaZlib.length} >>\nstream\n`, data: bmp.alphaZlib, binFooter: `\nendstream` };
+        const bmp = renderTextLabelBitmap360Dpi(text, maxWidthMm, maxHeightMm, fontPt, bold, maxLines);
+        const smaskId = addObj('');
+        objects[smaskId - 1] = {
+          binHeader: `<< /Type /XObject /Subtype /Image /Width ${bmp.width} /Height ${bmp.height} /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /FlateDecode /Length ${bmp.alphaZlib.length} >>\nstream\n`,
+          data: bmp.alphaZlib,
+          binFooter: `\nendstream`
+        };
 
         const imgId = addObj('');
         objects[imgId - 1] = {
@@ -1985,25 +2075,43 @@
       const catalogId = addObj('');
       const pagesId = addObj('');
       const pageIds = [];
-      const maxCaptionWidthMm = Math.max(10, wMm - 3);
+      const maxCaptionWidthMm = Math.max(12, wMm - layout.edgePadMm * 2);
+
+      // В PDF координаты Y идут снизу вверх (0 = низ страницы, pageH = верх страницы)
+      const topBandBottomPt = pageH - mmToPt(layout.edgePadMm + layout.topBandMm);
+      const topBandHeightPt = mmToPt(layout.topBandMm);
+
+      const bottomBandBottomPt = mmToPt(layout.edgePadMm);
+      const bottomBandHeightPt = mmToPt(layout.bottomBandMm);
+
+      const middleTopPt = showMarkers
+        ? pageH - mmToPt(layout.edgePadMm + layout.topBandMm + layout.gapMm)
+        : pageH - mmToPt(layout.edgePadMm);
+      const middleBottomPt = (showName || showRaw)
+        ? mmToPt(layout.edgePadMm + layout.bottomBandMm + layout.gapMm)
+        : mmToPt(layout.edgePadMm);
+      const middleCenterYPt = (middleTopPt + middleBottomPt) / 2;
 
       for (const item of lastRenderedCardsData) {
         const { res, markerText, productTitle, rawText } = item;
         const cols = res.totalCols;
         const rows = res.totalRows;
         const cellSize = matrixPt / Math.max(cols, rows);
-        const startX = (pageW - cols * cellSize) / 2 + shiftXPt;
-        const startYTop = (pageH - rows * cellSize) / 2 - shiftYPt;
+        const matrixW = cols * cellSize;
+        const matrixH = rows * cellSize;
+
+        const startX = (pageW - matrixW) / 2 + shiftXPt;
+        const startYBottom = middleCenterYPt - matrixH / 2 - shiftYPt;
 
         const streamCmds = [];
         streamCmds.push('0 0 0 rg');
 
-        // Чёткий векторный DataMatrix ECC200
+        // Чёткий векторный DataMatrix ECC200 строго в средней зоне между верхним и нижним текстом
         for (let r = 0; r < rows; r++) {
           for (let c = 0; c < cols; c++) {
             if (res.matrix[r][c] === 1) {
               const rx = (startX + c * cellSize).toFixed(3);
-              const ry = (pageH - (startYTop + (r + 1) * cellSize)).toFixed(3);
+              const ry = (startYBottom + (rows - 1 - r) * cellSize).toFixed(3);
               const rw = cellSize.toFixed(3);
               const rh = cellSize.toFixed(3);
               streamCmds.push(`${rx} ${ry} ${rw} ${rh} re f`);
@@ -2014,21 +2122,28 @@
         const pageXObjects = [];
 
         if (markerText) {
-          const cap = getOrCreateCaptionXObject(markerText, maxCaptionWidthMm, 6.2, true);
+          const cap = getOrCreateCaptionXObject(markerText, maxCaptionWidthMm, layout.topBandMm, 6.4, true, 1);
           const xName = `ImM${cap.xobjId}`;
           pageXObjects.push(`/${xName} ${cap.xobjId} 0 R`);
           const ix = ((pageW - cap.wPt) / 2 + shiftXPt).toFixed(3);
-          const iy = (pageH - cap.hPt - mmToPt(0.7) - shiftYPt).toFixed(3);
+          const iy = (topBandBottomPt + (topBandHeightPt - cap.hPt) / 2 - shiftYPt).toFixed(3);
           streamCmds.push(`q ${cap.wPt.toFixed(3)} 0 0 ${cap.hPt.toFixed(3)} ${ix} ${iy} cm /${xName} Do Q`);
         }
 
         const bottomCaption = productTitle || rawText || '';
         if (bottomCaption) {
-          const cap = getOrCreateCaptionXObject(bottomCaption, maxCaptionWidthMm, productTitle ? 5.6 : 5.0, Boolean(productTitle));
+          const cap = getOrCreateCaptionXObject(
+            bottomCaption,
+            maxCaptionWidthMm,
+            layout.bottomBandMm,
+            productTitle ? 5.8 : 5.0,
+            Boolean(productTitle),
+            2
+          );
           const xName = `ImB${cap.xobjId}`;
           pageXObjects.push(`/${xName} ${cap.xobjId} 0 R`);
           const ix = ((pageW - cap.wPt) / 2 + shiftXPt).toFixed(3);
-          const iy = (mmToPt(0.7) - shiftYPt).toFixed(3);
+          const iy = (bottomBandBottomPt + (bottomBandHeightPt - cap.hPt) / 2 - shiftYPt).toFixed(3);
           streamCmds.push(`q ${cap.wPt.toFixed(3)} 0 0 ${cap.hPt.toFixed(3)} ${ix} ${iy} cm /${xName} Do Q`);
         }
 
@@ -2090,12 +2205,12 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `matrix_labels_${wMm}x${hMm}mm_v8.pdf`;
+      a.download = `matrix_labels_${wMm}x${hMm}mm_v9.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-      setBanner(`Сформирован PDF-файл (${wMm}×${hMm} мм, страниц: ${pageIds.length}, подписей в кэше: ${captionCache.size}).`, 'success');
+      setBanner(`Сформирован PDF-файл (${wMm}×${hMm} мм, матрица ${layout.safeMatrixMm.toFixed(1)} мм, страниц: ${pageIds.length}, подписей в кэше: ${captionCache.size}).`, 'success');
     }
 
     /* ================= Загрузка ZIP и таблиц как в Project Agregator ================= */
