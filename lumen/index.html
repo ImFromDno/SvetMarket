@@ -517,11 +517,15 @@
       return Math.max(0.28, uf);
     }
 
-    function getDesiredMinCount(area, itemLumens) {
-      if (area < 7 || itemLumens >= 4500) return 1;
+    // Округление до чётного числа в большую сторону
+    function ceilToEven(value) {
+      const n = Math.max(2, Math.ceil(value));
+      return n % 2 === 0 ? n : n + 1;
+    }
+
+    function getDesiredMinCount(area) {
       if (area >= 60) return 6;
       if (area >= 25) return 4;
-      if (area >= 14) return 3;
       return 2;
     }
 
@@ -535,16 +539,13 @@
 
     function getShortComment(count, totalFlux, targetFlux) {
       const ratio = totalFlux / Math.max(1, targetFlux);
-      if (count === 1) {
-        return "Один светильник — для небольшой зоны, на просторе тени заметнее.";
+      if (ratio < 0.9) {
+        return `${count} шт. — яркость ниже расчётной, лучше взять модель помощнее или добавить точек.`;
       }
-      if (ratio < 0.85) {
-        return `${count} шт. — свет помягче, но яркость ниже расчётной.`;
-      }
-      if (ratio > 1.35) {
+      if (ratio > 1.45) {
         return `${count} шт. — с хорошим запасом света, но выше мощность и сумма.`;
       }
-      return `${count} шт. — ровнее засветка и нормальный запас по свету.`;
+      return `${count} шт. — ровная засветка и нормальный запас по свету.`;
     }
 
     function recalculate() {
@@ -581,23 +582,20 @@
         return;
       }
 
-      const maxReasonableWatts = Math.max(45, area * 26);
+      const maxReasonableWatts = Math.max(60, area * 28);
 
       const candidates = [];
       availableLuminaires.forEach(item => {
-        const minCount = getDesiredMinCount(area, item.lumens);
-        const rawApprox = totalLumens / item.lumens;
+        const minEvenCount = getDesiredMinCount(area);
+        const exactCount = ceilToEven(totalLumens / item.lumens);
+        const primaryCount = Math.max(minEvenCount, exactCount);
 
-        const baseCounts = new Set([
-          Math.max(minCount, Math.floor(rawApprox)),
-          Math.max(minCount, Math.ceil(rawApprox))
-        ]);
-
-        if (minCount > 1) {
-          baseCounts.add(minCount);
+        const evenOptions = new Set([primaryCount]);
+        if (primaryCount > minEvenCount) {
+          evenOptions.add(primaryCount - 2);
         }
 
-        baseCounts.forEach(count => {
+        evenOptions.forEach(count => {
           const flux = count * item.lumens;
           const totalWatt = count * item.watts;
 
@@ -607,7 +605,7 @@
 
           const diff = Math.abs(flux - totalLumens);
           const ratio = flux / Math.max(1, totalLumens);
-          const multiPointBonus = count >= minCount ? 0.9 : 1.12;
+          const coverageWeight = flux >= totalLumens ? 0.88 : 1.15;
 
           candidates.push({
             item,
@@ -616,12 +614,12 @@
             totalWatt,
             diff,
             ratio,
-            score: diff * multiPointBonus
+            score: diff * coverageWeight
           });
         });
       });
 
-      let filtered = candidates.filter(c => c.ratio >= 0.5 && c.ratio <= 1.85);
+      let filtered = candidates.filter(c => c.ratio >= 0.55 && c.ratio <= 2.1);
       if (filtered.length === 0) {
         filtered = [...candidates].sort((a, b) => a.score - b.score).slice(0, 3);
       } else {
