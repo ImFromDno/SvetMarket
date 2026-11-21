@@ -285,11 +285,11 @@
     <div class="row-2">
       <div>
         <label for="lengthM">Длина, м</label>
-        <input type="number" id="lengthM" min="0.1" step="0.1" placeholder="Напр. 10" onclick="this.select()">
+        <input type="number" id="lengthM" min="0.1" step="0.1" placeholder="Напр. 5" onclick="this.select()">
       </div>
       <div>
         <label for="widthM">Ширина, м</label>
-        <input type="number" id="widthM" min="0.1" step="0.1" placeholder="Напр. 10" onclick="this.select()">
+        <input type="number" id="widthM" min="0.1" step="0.1" placeholder="Напр. 4" onclick="this.select()">
       </div>
     </div>
 
@@ -318,7 +318,7 @@
   </div>
 
   <div class="summary-card">
-    <div class="hint" style="margin-top:0">Ориентировочный поток по нормам с учётом площади, высоты, потерь и запаса</div>
+    <div class="hint" style="margin-top:0">Ориентировочный поток с учётом обстановки (×1,5), площади, высоты и запаса</div>
     <div class="summary-grid">
       <div class="stat-box">
         <div class="stat-label">Нужно светового потока</div>
@@ -330,7 +330,7 @@
       </div>
     </div>
     <div class="result-disclaimer">
-      <strong>Расчёт примерный:</strong> значения приведены как ориентир по типовым нормам — по факту света может быть меньше или больше, поэтому финальный выбор остаётся за задачей и расстановкой, без гарантии точной освещённости.
+      <strong>Расчёт примерный:</strong> значения приведены как ориентир с поправкой на реальную обстановку (мебель, потери света и запас) — по факту света может быть меньше или больше, поэтому финальный выбор остаётся за задачей и расстановкой, без гарантии точной освещённости.
     </div>
   </div>
 
@@ -339,6 +339,8 @@
 
   <script>
     const CATALOG_FILE = "luminaires.txt";
+    // Поправочный коэффициент на реальную обстановку (мебель, потери отражённого света, тени)
+    const REAL_ROOM_FACTOR = 1.5;
 
     const DEFAULT_LUMINAIRES = [
       { name: "НБП 12-60-001 (влагозащищённый)", watts: 12, lumens: 1080, price: 650 },
@@ -406,8 +408,6 @@
     }
 
     function getEffectiveUf(baseUf, l, w, area, h) {
-      // На больших площадях и высоких потолках доля полезного потока ниже,
-      // плюс закладываем плавный рост под сетку точек и потери по периметру.
       let uf = baseUf;
       if (area > 25) {
         const extraArea = Math.min(area - 25, 175);
@@ -468,13 +468,13 @@
       const mf = parseFloat(opt?.dataset?.mf) || 1.25;
 
       const effUf = getEffectiveUf(baseUf, l, w, area, height);
-      const totalLumens = Math.ceil((area * lux * mf) / effUf);
+      const totalLumens = Math.ceil(((area * lux * mf) / effUf) * REAL_ROOM_FACTOR);
 
       calcAreaEl.textContent = `${area.toFixed(1).replace(".", ",")} м²`;
       reqLumensEl.textContent = `${totalLumens.toLocaleString("ru-RU")} лм`;
 
       // Защита от абсурдно мощных наборов в маленьких помещениях
-      const maxReasonableWatts = Math.max(40, area * 22);
+      const maxReasonableWatts = Math.max(45, area * 26);
 
       const candidates = [];
       luminaires.forEach(item => {
