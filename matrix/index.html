@@ -753,10 +753,10 @@
 </head>
 <body>
   <header class="page-header">
-    <div class="ts-bar" aria-label="Tom Studio — Project Matrix · v7">
+    <div class="ts-bar" aria-label="Tom Studio — Project Matrix · v8">
       <span class="ts-brand">Tom Studio</span>
       <span class="ts-divider" aria-hidden="true"></span>
-      <span class="ts-project">Project Matrix · v7</span>
+      <span class="ts-project">Project Matrix · v8</span>
     </div>
   </header>
 
@@ -932,11 +932,11 @@
   <div class="grid" id="outputGrid"></div>
 
   <footer class="page-footer">
-    <div class="ts-bar" aria-label="Tom Studio — Project Matrix · v7">
+    <div class="ts-bar" aria-label="Tom Studio — Project Matrix · v8">
       <span class="ts-brand">Tom Studio</span>
       <button type="button" class="bulb-btn" id="bulbToggle" aria-label="Переключить тему" title="Переключить тему">💡</button>
       <span class="ts-divider" aria-hidden="true"></span>
-      <span class="ts-project">Project Matrix · v7</span>
+      <span class="ts-project">Project Matrix · v8</span>
     </div>
   </footer>
 
@@ -1808,9 +1808,80 @@
       }
     }
 
-    /* ================= Генерация прямого PDF 43×25 мм в браузере ================= */
+    /* ================= Генерация прямого PDF 43×25 мм в браузере (с поддержкой кириллицы и кэшем) ================= */
 
-    function downloadLabelsPdf43x25() {
+    async function deflateBytesIfSupported(uint8Arr) {
+      if (typeof CompressionStream === 'function') {
+        try {
+          const cs = new CompressionStream('deflate');
+          const writer = cs.writable.getWriter();
+          writer.write(uint8Arr);
+          writer.close();
+          const buf = await new Response(cs.readable).arrayBuffer();
+          return { bytes: new Uint8Array(buf), compressed: true };
+        } catch (_) {}
+      }
+      return { bytes: uint8Arr, compressed: false };
+    }
+
+    function buildTextOverlayRgbaAlpha(markerText, bottomLabel, isTitle, wMm, hMm, topMarkerYMm, bottomTextYMm, dpi = 360) {
+      const pxPerMm = dpi / 25.4;
+      const canvasW = Math.max(1, Math.round(wMm * pxPerMm));
+      const canvasH = Math.max(1, Math.round(hMm * pxPerMm));
+
+      const canvas = document.createElement('canvas');
+      canvas.width = canvasW;
+      canvas.height = canvasH;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvasW, canvasH);
+
+      let hasAlpha = false;
+      const maxW = Math.max(10, (wMm - 2.4) * pxPerMm);
+
+      if (markerText) {
+        const fontPx = Math.max(8, (6.2 / 72) * 25.4 * pxPerMm);
+        ctx.font = `700 ${fontPx.toFixed(1)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif`;
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(String(markerText), canvasW / 2, topMarkerYMm * pxPerMm, maxW);
+        hasAlpha = true;
+      }
+
+      if (bottomLabel) {
+        const ptSize = isTitle ? 5.6 : 4.8;
+        const weight = isTitle ? '600' : '400';
+        const fontPx = Math.max(8, (ptSize / 72) * 25.4 * pxPerMm);
+        ctx.font = `${weight} ${fontPx.toFixed(1)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif`;
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(String(bottomLabel), canvasW / 2, bottomTextYMm * pxPerMm, maxW);
+        hasAlpha = true;
+      }
+
+      if (!hasAlpha) return null;
+
+      const rgba = ctx.getImageData(0, 0, canvasW, canvasH).data;
+      const totalPx = canvasW * canvasH;
+      const rgbBytes = new Uint8Array(totalPx * 3);
+      const alphaBytes = new Uint8Array(totalPx);
+      let anyNonZero = false;
+
+      for (let p = 0, rIdx = 0; p < totalPx; p++, rIdx += 4) {
+        rgbBytes[p * 3] = rgba[rIdx];
+        rgbBytes[p * 3 + 1] = rgba[rIdx + 1];
+        rgbBytes[p * 3 + 2] = rgba[rIdx + 2];
+        const a = rgba[rIdx + 3];
+        alphaBytes[p] = a;
+        if (a > 0) anyNonZero = true;
+      }
+
+      if (!anyNonZero) return null;
+      return { width: canvasW, height: canvasH, rgbBytes, alphaBytes };
+    }
+
+    async function downloadLabelsPdf43x25() {
       if (!lastRenderedCardsData.length) {
         renderAll();
       }
@@ -1818,6 +1889,8 @@
         setBanner('Нет сгенерированных этикеток для экспорта в PDF.', 'warn');
         return;
       }
+
+      setBanner(`Формируем PDF (${lastRenderedCardsData.length} этикеток)...`);
 
       const wMm = Math.max(15, Number(document.getElementById('labelWidthMm').value) || 43);
       const hMm = Math.max(10, Number(document.getElementById('labelHeightMm').value) || 25);
@@ -1832,7 +1905,6 @@
       const shiftXPt = mmToPt(oxMm);
       const shiftYPt = mmToPt(oyMm);
 
-      // Формируем чистый векторный многостраничный PDF 1.4 (каждая страница = 1 этикетка 43x25 мм)
       const objects = [];
       const addObj = (body) => {
         objects.push(body);
@@ -1841,9 +1913,15 @@
 
       const catalogId = addObj('');
       const pagesId = addObj('');
-      const fontId = addObj('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
-
       const pageIds = [];
+
+      const matrixTopMm = Math.max(0.8, (hMm - mMm) / 2 - oyMm);
+      const matrixBottomMm = Math.min(hMm - 0.8, (hMm + mMm) / 2 - oyMm);
+      const topMarkerYMm = Math.max(1.4, matrixTopMm * 0.52);
+      const bottomTextYMm = Math.min(hMm - 1.4, matrixBottomMm + (hMm - matrixBottomMm) * 0.52);
+
+      // Кэшируем готовые PDF XObject-ы по ключу текста, чтобы не дублировать одинаковые подписи
+      const xobjCache = new Map();
 
       for (const item of lastRenderedCardsData) {
         const { res, markerText, productTitle, rawText } = item;
@@ -1853,10 +1931,10 @@
         const startX = (pageW - cols * cellSize) / 2 + shiftXPt;
         const startYTop = (pageH - rows * cellSize) / 2 - shiftYPt;
 
-        let streamCmds = [];
+        const streamCmds = [];
         streamCmds.push('0 0 0 rg');
 
-        // Рисуем модули DataMatrix ECC200 в координатах PDF (снизу вверх)
+        // 1. Векторные модули DataMatrix ECC200
         for (let r = 0; r < rows; r++) {
           for (let c = 0; c < cols; c++) {
             if (res.matrix[r][c] === 1) {
@@ -1869,54 +1947,117 @@
           }
         }
 
-        // Текстовые метки (только ASCII-безопасные для базового Type1 шрифта, чтобы PDF открывался без проблем)
-        const toPdfAscii = (str) => {
-          return String(str || '')
-            .replace(/[^\x20-\x7e]/g, '?')
-            .replace(/\\/g, '\\\\')
-            .replace(/\(/g, '\\(')
-            .replace(/\)/g, '\\)');
-        };
+        // 2. Текстовый слой с поддержкой кириллицы
+        const bottomLabel = productTitle || rawText || '';
+        const isTitle = Boolean(productTitle);
+        const cacheKey = `${wMm}x${hMm}|${topMarkerYMm.toFixed(2)}|${bottomTextYMm.toFixed(2)}|${markerText}||${bottomLabel}||${isTitle ? 1 : 0}`;
 
-        if (markerText) {
-          const safeM = toPdfAscii(markerText);
-          streamCmds.push(`BT /F1 6 Tf 2 ${(pageH - 6.5).toFixed(2)} Td (${safeM}) Tj ET`);
+        let xobjId = xobjCache.get(cacheKey);
+        if (!xobjId && (markerText || bottomLabel)) {
+          const overlay = buildTextOverlayRgbaAlpha(
+            markerText,
+            bottomLabel,
+            isTitle,
+            wMm,
+            hMm,
+            topMarkerYMm,
+            bottomTextYMm,
+            360
+          );
+          if (overlay) {
+            const [rgbDef, alphaDef] = await Promise.all([
+              deflateBytesIfSupported(overlay.rgbBytes),
+              deflateBytesIfSupported(overlay.alphaBytes)
+            ]);
+            const rgbFilter = rgbDef.compressed ? ' /Filter /FlateDecode' : '';
+            const alphaFilter = alphaDef.compressed ? ' /Filter /FlateDecode' : '';
+
+            const smaskId = addObj({
+              dict: `<< /Type /XObject /Subtype /Image /Width ${overlay.width} /Height ${overlay.height} /ColorSpace /DeviceGray /BitsPerComponent 8${alphaFilter} /Length ${alphaDef.bytes.length} >>`,
+              rawBytes: alphaDef.bytes
+            });
+            xobjId = addObj({
+              dict: `<< /Type /XObject /Subtype /Image /Width ${overlay.width} /Height ${overlay.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /SMask ${smaskId} 0 R${rgbFilter} /Length ${rgbDef.bytes.length} >>`,
+              rawBytes: rgbDef.bytes
+            });
+            xobjCache.set(cacheKey, xobjId);
+          }
         }
 
-        if (productTitle) {
-          const safeTitle = toPdfAscii(productTitle.slice(0, 48));
-          streamCmds.push(`BT /F1 5.5 Tf 2 2 Td (${safeTitle}) Tj ET`);
-        } else if (rawText) {
-          const safeRaw = toPdfAscii(rawText.slice(0, 48));
-          streamCmds.push(`BT /F1 5 Tf 2 2 Td (${safeRaw}) Tj ET`);
+        let resourcesDict = '<< >>';
+        if (xobjId) {
+          resourcesDict = `<< /XObject << /ImTxt ${xobjId} 0 R >> >>`;
+          streamCmds.push(`q ${pageW.toFixed(3)} 0 0 ${pageH.toFixed(3)} 0 0 cm /ImTxt Do Q`);
         }
 
-        const contentStr = streamCmds.join('\n');
-        const contentLen = new TextEncoder().encode(contentStr).length;
-        const contentId = addObj(`<< /Length ${contentLen} >>\nstream\n${contentStr}\nendstream`);
-        const pageId = addObj(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${pageW.toFixed(3)} ${pageH.toFixed(3)}] /Resources << /Font << /F1 ${fontId} 0 R >> >> /Contents ${contentId} 0 R >>`);
+        const contentStr = streamCmds.join('
+');
+        const contentBytes = new TextEncoder().encode(contentStr);
+        const contentId = addObj({
+          dict: `<< /Length ${contentBytes.length} >>`,
+          rawBytes: contentBytes
+        });
+        const pageId = addObj(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${pageW.toFixed(3)} ${pageH.toFixed(3)}] /Resources ${resourcesDict} /Contents ${contentId} 0 R >>`);
         pageIds.push(pageId);
       }
 
       objects[pagesId - 1] = `<< /Type /Pages /Kids [${pageIds.map(id => `${id} 0 R`).join(' ')}] /Count ${pageIds.length} >>`;
       objects[catalogId - 1] = `<< /Type /Catalog /Pages ${pagesId} 0 R >>`;
 
-      let pdf = '%PDF-1.4\n';
+      const enc = new TextEncoder();
+      const chunks = [];
+      let byteLen = 0;
+      const pushStr = (s) => {
+        const b = enc.encode(s);
+        chunks.push(b);
+        byteLen += b.length;
+      };
+      const pushBytes = (b) => {
+        chunks.push(b);
+        byteLen += b.length;
+      };
+
+      pushStr('%PDF-1.4
+');
       const offsets = [0];
       for (let i = 0; i < objects.length; i++) {
-        offsets.push(new TextEncoder().encode(pdf).length);
-        pdf += `${i + 1} 0 obj\n${objects[i]}\nendobj\n`;
+        offsets.push(byteLen);
+        const obj = objects[i];
+        pushStr(`${i + 1} 0 obj
+`);
+        if (typeof obj === 'string') {
+          pushStr(`${obj}
+endobj
+`);
+        } else {
+          pushStr(`${obj.dict}
+stream
+`);
+          pushBytes(obj.rawBytes);
+          pushStr(`
+endstream
+endobj
+`);
+        }
       }
 
-      const xrefOffset = new TextEncoder().encode(pdf).length;
-      pdf += `xref\n0 ${objects.length + 1}\n`;
-      pdf += '0000000000 65535 f \n';
+      const xrefOffset = byteLen;
+      pushStr(`xref
+0 ${objects.length + 1}
+`);
+      pushStr('0000000000 65535 f 
+');
       for (let i = 1; i <= objects.length; i++) {
-        pdf += `${String(offsets[i]).padStart(10, '0')} 00000 n \n`;
+        pushStr(`${String(offsets[i]).padStart(10, '0')} 00000 n 
+`);
       }
-      pdf += `trailer\n<< /Size ${objects.length + 1} /Root ${catalogId} 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+      pushStr(`trailer
+<< /Size ${objects.length + 1} /Root ${catalogId} 0 R >>
+startxref
+${xrefOffset}
+%%EOF`);
 
-      const blob = new Blob([pdf], { type: 'application/pdf' });
+      const blob = new Blob(chunks, { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
