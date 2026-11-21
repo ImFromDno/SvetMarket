@@ -93,9 +93,10 @@
     }
 
     body {
-      margin: 8px auto 24px;
-      padding: 0 15px 15px;
-      max-width: 680px;
+      margin: 14px auto 32px;
+      padding: 0 20px 20px;
+      max-width: 1040px;
+      font-size: 15px;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
@@ -185,16 +186,9 @@
       box-shadow: none;
     }
 
-    h3 {
-      margin: 16px 0 10px;
-      text-align: center;
-      color: var(--accent);
-      font-size: 1.05rem;
-    }
-
     .card {
       background: var(--card);
-      padding: 18px;
+      padding: 20px;
       border-radius: 10px;
       margin-bottom: 14px;
       box-shadow: var(--shadow);
@@ -204,7 +198,7 @@
     .dropzone {
       border: 2px dashed var(--border);
       border-radius: 10px;
-      padding: 20px 16px;
+      padding: 22px 18px;
       text-align: center;
       background: var(--card-2);
       cursor: pointer;
@@ -220,14 +214,14 @@
     }
 
     .dropzone-title {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 700;
       color: var(--text);
     }
 
     .dropzone-sub {
-      margin-top: 4px;
-      font-size: 12.5px;
+      margin-top: 5px;
+      font-size: 13.5px;
       color: var(--muted);
     }
 
@@ -237,7 +231,7 @@
       flex-wrap: wrap;
       justify-content: center;
       gap: 8px;
-      font-size: 12px;
+      font-size: 13px;
     }
 
     .link-btn {
@@ -246,7 +240,7 @@
       border: none;
       padding: 2px 4px;
       color: var(--accent);
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
       text-decoration: underline;
       cursor: pointer;
@@ -258,7 +252,7 @@
 
     .checkbox-row {
       margin-top: 12px;
-      padding: 10px 12px;
+      padding: 11px 14px;
       border-radius: 8px;
       background: var(--card-2);
       border: 1px solid var(--border);
@@ -278,25 +272,25 @@
     }
 
     .checkbox-text {
-      font-size: 13.5px;
+      font-size: 14.5px;
       font-weight: 600;
       color: var(--text);
     }
 
     .checkbox-sub {
       display: block;
-      font-size: 11.5px;
+      font-size: 12.5px;
       font-weight: 400;
       color: var(--muted);
-      margin-top: 1px;
+      margin-top: 2px;
     }
 
     .status-banner {
       margin-top: 12px;
-      padding: 9px 12px;
+      padding: 10px 14px;
       border-radius: 8px;
-      font-size: 12.5px;
-      line-height: 1.4;
+      font-size: 13.5px;
+      line-height: 1.45;
       border: 1px solid var(--info-border);
       background: var(--info-bg);
       color: var(--info-text);
@@ -330,24 +324,23 @@
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 10px;
-      margin-top: 8px;
     }
 
     .stat-box {
       background: var(--card-2);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 10px 12px;
+      padding: 11px 14px;
     }
 
     .stat-label {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--muted);
     }
 
     .stat-value {
-      margin-top: 3px;
-      font-size: 1.1rem;
+      margin-top: 4px;
+      font-size: 1.25rem;
       font-weight: 700;
       color: var(--text);
     }
@@ -370,17 +363,17 @@
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .result-title {
-      font-size: 14px;
+      font-size: 15.5px;
       font-weight: 700;
       color: var(--text);
     }
 
     .result-sub {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--muted);
       margin-top: 2px;
     }
@@ -395,8 +388,8 @@
       appearance: none;
       border: 1px solid transparent;
       border-radius: 8px;
-      padding: 9px 14px;
-      font-size: 13.5px;
+      padding: 10px 16px;
+      font-size: 14px;
       font-weight: 700;
       cursor: pointer;
       transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.12s ease, opacity 0.15s ease;
@@ -437,15 +430,15 @@
 
     textarea.output-area {
       width: 100%;
-      min-height: 210px;
-      padding: 12px;
+      min-height: 280px;
+      padding: 14px;
       border: 1px solid var(--border);
       border-radius: 8px;
       background: var(--card-2);
       color: var(--text);
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      font-size: 12.5px;
-      line-height: 1.45;
+      font-size: 13.5px;
+      line-height: 1.5;
       resize: vertical;
       outline: none;
     }
@@ -454,47 +447,106 @@
       border-color: var(--accent);
     }
 
-    .file-list {
-      display: grid;
-      gap: 8px;
-    }
-
-    .file-item {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 11px 14px;
-      box-shadow: var(--shadow);
+    .report-head {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
+      flex-wrap: wrap;
       gap: 10px;
+      margin-bottom: 14px;
     }
 
-    .file-meta {
-      min-width: 0;
-    }
-
-    .file-name {
-      font-size: 13.5px;
+    .report-title {
+      font-size: 16.5px;
       font-weight: 700;
+      color: var(--text);
+    }
+
+    .report-sub {
+      margin-top: 3px;
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+
+    .report-pill {
+      padding: 6px 13px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      background: var(--card-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card-2);
+    }
+
+    table.report-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      text-align: left;
+    }
+
+    table.report-table th,
+    table.report-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    table.report-table th {
+      background: var(--card);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    table.report-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    table.report-table tbody tr:hover {
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .col-num {
+      width: 48px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .col-file {
+      font-weight: 600;
       color: var(--text);
       word-break: break-word;
     }
 
-    .file-desc {
-      margin-top: 2px;
-      font-size: 12px;
+    .col-right {
+      text-align: right;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .col-note {
       color: var(--muted);
+      font-size: 13.5px;
     }
 
     .badge {
-      padding: 4px 9px;
+      display: inline-block;
+      padding: 4px 10px;
       border-radius: 999px;
-      font-size: 12px;
+      font-size: 12.5px;
       font-weight: 700;
       white-space: nowrap;
-      flex-shrink: 0;
     }
 
     .badge-ok {
@@ -509,14 +561,11 @@
       border: 1px solid var(--warn-border);
     }
 
-    .empty-state {
-      background: var(--card);
-      border: 1px dashed var(--border);
-      border-radius: 10px;
-      padding: 18px;
-      text-align: center;
-      font-size: 13px;
+    .empty-cell {
+      text-align: center !important;
+      padding: 22px 14px !important;
       color: var(--muted);
+      font-size: 14px;
     }
 
     .page-footer {
@@ -530,6 +579,10 @@
     }
 
     @media (max-width: 440px) {
+      body {
+        padding: 0 12px 16px;
+      }
+
       .ts-bar {
         padding: 11px 15px;
         gap: 8px;
@@ -631,10 +684,35 @@
     ></textarea>
   </section>
 
-  <h3>Файлы из архива</h3>
-  <div class="file-list" id="fileListBox">
-    <div class="empty-state">Загрузите ZIP-архив, чтобы увидеть список таблиц и статус каждой.</div>
-  </div>
+  <section class="card" aria-label="Отчёт по файлам из архива">
+    <div class="report-head">
+      <div>
+        <div class="report-title">Отчёт по файлам из архива</div>
+        <div class="report-sub">Показывает порядок обработки таблиц, статус (принят или пропущен) и причину пропуска.</div>
+      </div>
+      <span class="report-pill" id="reportSummaryPill">Всего: 0 (взято: 0, пропущено: 0)</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th class="col-num">#</th>
+            <th>Файл в архиве</th>
+            <th>Статус</th>
+            <th class="col-right">Строк в файле</th>
+            <th class="col-right">Взято строк</th>
+            <th>Примечание / причина пропуска</th>
+          </tr>
+        </thead>
+        <tbody id="fileReportBody">
+          <tr>
+            <td colspan="6" class="empty-cell">Загрузите ZIP-архив, чтобы увидеть отчёт по таблицам.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
   <footer class="page-footer">
     <div class="ts-bar" aria-label="Tom Studio — Project Agregator">
@@ -667,10 +745,10 @@
       const clearBtnEl = document.getElementById("clearBtn");
       const copyBtnEl = document.getElementById("copyBtn");
       const outputAreaEl = document.getElementById("outputArea");
-      const fileListBoxEl = document.getElementById("fileListBox");
+      const reportSummaryPillEl = document.getElementById("reportSummaryPill");
+      const fileReportBodyEl = document.getElementById("fileReportBody");
       const bulbToggleEl = document.getElementById("bulbToggle");
 
-      // Храним распарсенные таблицы в памяти, чтобы мгновенно пересчитывать при смене чекбокса
       let parsedTablesCache = [];
       let copyFeedbackTimer = null;
 
@@ -739,7 +817,6 @@
 
       function normalizeCell(val) {
         if (val === null || val === undefined) return "";
-        // Убираем переносы строк и табуляции внутри ячеек, чтобы не ломать TSV-строку для 1С
         return String(val).replace(/[\r\n\t]+/g, " ").trim();
       }
 
@@ -770,6 +847,7 @@
             name,
             status: "skipped",
             reason: "В файле нет листов",
+            totalNonEmptyRows: 0,
             dataRows: [],
           };
         }
@@ -781,24 +859,20 @@
           defval: "",
         });
 
-        // Отсекаем первую строку (шапку таблицы)
-        const rowsAfterHeader = Array.isArray(rawRows) && rawRows.length > 1 ? rawRows.slice(1) : [];
-
-        // Оставляем только непустые строки данных
-        const nonEmptyDataRows = rowsAfterHeader
-          .filter((row) => !isRowEmpty(row))
-          .map(trimTrailingEmptyCells);
+        const nonEmptyRows = Array.isArray(rawRows) ? rawRows.filter((row) => !isRowEmpty(row)) : [];
+        const rowsAfterHeader = nonEmptyRows.length > 1 ? nonEmptyRows.slice(1) : [];
+        const nonEmptyDataRows = rowsAfterHeader.map(trimTrailingEmptyCells);
 
         if (nonEmptyDataRows.length === 0) {
           return {
             name,
             status: "skipped",
             reason: "Нет строк данных после шапки",
+            totalNonEmptyRows: nonEmptyRows.length,
             dataRows: [],
           };
         }
 
-        // Проверяем, есть ли значения во 2-м столбце (индекс 1) среди строк данных
         const hasCol2Values = nonEmptyDataRows.some(
           (row) => Array.isArray(row) && row.length > 1 && normalizeCell(row[1]) !== ""
         );
@@ -808,6 +882,7 @@
           status: "parsed",
           reason: "",
           hasCol2Values,
+          totalNonEmptyRows: nonEmptyRows.length,
           dataRows: nonEmptyDataRows,
         };
       }
@@ -828,8 +903,9 @@
             reportItems.push({
               name: item.name,
               included: false,
-              rowsCount: 0,
-              detail: item.reason || "Пропущен",
+              fileRowsCount: item.totalNonEmptyRows || 0,
+              takenRowsCount: 0,
+              note: item.reason || "Пропущен",
             });
             continue;
           }
@@ -839,8 +915,9 @@
             reportItems.push({
               name: item.name,
               included: false,
-              rowsCount: item.dataRows.length,
-              detail: "2-й столбец пустой — не нужно агрегировать",
+              fileRowsCount: item.totalNonEmptyRows || item.dataRows.length + 1,
+              takenRowsCount: 0,
+              note: "Пустой 2-й столбик (столбец В) — файл не требует агрегации",
             });
             continue;
           }
@@ -853,8 +930,9 @@
           reportItems.push({
             name: item.name,
             included: true,
-            rowsCount: item.dataRows.length,
-            detail: `Взято строк: ${item.dataRows.length}`,
+            fileRowsCount: item.totalNonEmptyRows || item.dataRows.length + 1,
+            takenRowsCount: item.dataRows.length,
+            note: "Принят (шапка пропущена, взяты строки данных)",
           });
         }
 
@@ -866,6 +944,8 @@
         statSkippedFilesEl.textContent = String(skippedCount);
         statTotalRowsEl.textContent = String(mergedLines.length);
 
+        reportSummaryPillEl.textContent = `Всего: ${parsedTablesCache.length} (взято: ${includedCount}, пропущено: ${skippedCount})`;
+
         const hasResult = outputText.length > 0;
         copyBtnEl.disabled = !hasResult;
         clearBtnEl.disabled = parsedTablesCache.length === 0;
@@ -874,28 +954,29 @@
           ? `Строк для вставки: ${mergedLines.length} · Таблиц: ${includedCount}`
           : "Скопируйте блок и вставьте в табличную часть 1С";
 
-        renderFileList(reportItems);
+        renderFileReport(reportItems);
       }
 
-      function renderFileList(items) {
+      function renderFileReport(items) {
         if (!items || items.length === 0) {
-          fileListBoxEl.innerHTML =
-            '<div class="empty-state">Загрузите ZIP-архив, чтобы увидеть список таблиц и статус каждой.</div>';
+          fileReportBodyEl.innerHTML =
+            '<tr><td colspan="6" class="empty-cell">Загрузите ZIP-архив, чтобы увидеть отчёт по таблицам.</td></tr>';
           return;
         }
 
-        fileListBoxEl.innerHTML = items
-          .map((item) => {
+        fileReportBodyEl.innerHTML = items
+          .map((item, idx) => {
             const badgeClass = item.included ? "badge badge-ok" : "badge badge-skip";
-            const badgeText = item.included ? "В работе" : "Пропущен";
+            const badgeText = item.included ? "Принят" : "Пропущен";
             return `
-              <div class="file-item">
-                <div class="file-meta">
-                  <div class="file-name">${escapeHtml(item.name)}</div>
-                  <div class="file-desc">${escapeHtml(item.detail)}</div>
-                </div>
-                <span class="${badgeClass}">${badgeText}</span>
-              </div>
+              <tr>
+                <td class="col-num">${idx + 1}</td>
+                <td class="col-file">${escapeHtml(item.name)}</td>
+                <td><span class="${badgeClass}">${badgeText}</span></td>
+                <td class="col-right">${item.fileRowsCount}</td>
+                <td class="col-right"><strong>${item.takenRowsCount}</strong></td>
+                <td class="col-note">${escapeHtml(item.note)}</td>
+              </tr>
             `;
           })
           .join("");
@@ -935,6 +1016,7 @@
                 name: entryName,
                 status: "skipped",
                 reason: `Ошибка чтения: ${err && err.message ? err.message : "повреждённый файл"}`,
+                totalNonEmptyRows: 0,
                 dataRows: [],
               });
             }
@@ -974,6 +1056,7 @@
               name: f.name,
               status: "skipped",
               reason: `Ошибка чтения: ${err && err.message ? err.message : "ошибка"}`,
+              totalNonEmptyRows: 0,
               dataRows: [],
             });
           }
