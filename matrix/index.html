@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tom Studio — Project Matrix</title>
+  <style>
+    :root {
+      --bg: #0f1622;
+      --surface: #162032;
+      --surface-2: #1c283e;
+      --text: #eef3fb;
+      --muted: #9fb0c8;
+      --border: #2a3a54;
+      --accent: #4da3ff;
+      --code-bg: #ffffff;
+    }
+
+    body.light {
+      --bg: #f4f6fa;
+      --surface: #ffffff;
+      --surface-2: #eef2f7;
+      --text: #151b24;
+      --muted: #556275;
+      --border: #d5dde8;
+      --accent: #1d6fe8;
+      --code-bg: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .ts-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 22px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ts-brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+    }
+
+    .ts-brand {
+      font-size: 16px;
+    }
+
+    .ts-divider {
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .ts-project {
+      font-size: 15px;
+      color: var(--accent);
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 24px auto;
+      padding: 0 18px 36px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 22px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      resize: vertical;
+    }
+
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    select {
+      padding: 9px 12px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    button {
+      padding: 9px 15px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    h2 {
+      font-size: 18px;
+      margin: 0 0 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .card-title {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .matrix-box {
+      width: 184px;
+      height: 184px;
+      padding: 12px;
+      border-radius: 10px;
+      background: var(--code-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .matrix-box canvas {
+      max-width: 100%;
+      max-height: 100%;
+      image-rendering: pixelated;
+    }
+
+    .raw-code {
+      margin-top: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.4;
+      word-break: break-all;
+      color: var(--text);
+    }
+
+    .ts-footer {
+      max-width: 980px;
+      margin: 0 auto 28px;
+      padding: 14px 18px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .ts-footer-divider {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .bulb-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <header class="ts-bar">
+    <div class="ts-brand-wrap">
+      <span class="ts-brand">Tom Studio</span>
+      <span class="ts-divider">/</span>
+      <span class="ts-project">Project Matrix</span>
+    </div>
+    <button type="button" class="bulb-btn" id="themeToggleTop" aria-label="Переключить тему">
+      <span>💡</span>
+      <span id="themeLabelTop">Светлая</span>
+    </button>
+  </header>
+
+  <main class="container">
+    <section class="panel">
+      <label for="codesInput">Данные из 1С (по одной строке на код)</label>
+      <textarea id="codesInput">(01)04810158084946(21)5.o&amp;UVcJUuTZDaUG,buQ
+(01)04810158084946(21)5"qLO4X;npYTKt!g-XT.
+(01)04810158084946(21)5(GMnWO&gt;pzKjVcU.31Ey
+(01)04810158084946(21)5(KILVk"N/fF(8GSQ.AU</textarea>
+
+      <div class="controls-row">
+        <button type="button" class="primary" id="renderBtn">Сгенерировать коды</button>
+        <select id="encodeMode">
+          <option value="gs1" selected>GS1 DataMatrix (без скобок, FNC1/GS для AI)</option>
+          <option value="raw">Как есть (буквальная строка)</option>
+        </select>
+        <button type="button" id="clearBtn">Очистить</button>
+      </div>
+      <div class="status" id="statusBar">Загрузка библиотеки bwip-js...</div>
+    </section>
+
+    <h2>Матричные коды</h2>
+    <div class="grid" id="outputGrid"></div>
+  </main>
+
+  <footer class="ts-footer">
+    <span>Tom Studio · Project Matrix</span>
+    <button type="button" class="bulb-btn" id="themeToggleFooter" aria-label="Переключить тему">
+      <span>💡</span>
+      <span id="themeLabelFooter">Светлая</span>
+    </button>
+    <div class="ts-footer-divider"></div>
+  </footer>
+
+  <script>
+    const GS = String.fromCharCode(29);
+    const BWIP_URLS = [
+      'https://cdn.jsdelivr.net/npm/bwip-js@4.5.1/dist/bwip-js-browser.min.js',
+      'https://unpkg.com/bwip-js@4.5.1/dist/bwip-js-browser.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/bwip-js/4.5.1/bwip-js-browser.min.js'
+    ];
+
+    let bwipReadyPromise = null;
+
+    function loadBwip() {
+      if (window.bwipjs) return Promise.resolve(window.bwipjs);
+      if (bwipReadyPromise) return bwipReadyPromise;
+
+      bwipReadyPromise = new Promise((resolve, reject) => {
+        let index = 0;
+
+        function tryNext() {
+          if (window.bwipjs) {
+            resolve(window.bwipjs);
+            return;
+          }
+          if (index >= BWIP_URLS.length) {
+            reject(new Error('Не удалось загрузить bwip-js ни с одного CDN'));
+            return;
+          }
+
+          const url = BWIP_URLS[index++];
+          const script = document.createElement('script');
+          script.src = url;
+          script.async = true;
+          script.onload = () => {
+            if (window.bwipjs) {
+              resolve(window.bwipjs);
+            } else {
+              tryNext();
+            }
+          };
+          script.onerror = () => tryNext();
+          document.head.appendChild(script);
+        }
+
+        tryNext();
+      });
+
+      return bwipReadyPromise;
+    }
+
+    function preparePayload(line, mode) {
+      if (mode === 'raw') {
+        return { text: line, isGs1: false };
+      }
+
+      const matches = [...line.matchAll(/\((\d{2,4})\)([^(]*)/g)];
+      if (!matches.length) {
+        return { text: line, isGs1: false };
+      }
+
+      const fixedLengthAI = new Set(['01', '02', '03', '04', '11', '12', '13', '14', '15', '16', '17', '20']);
+      let result = '';
+
+      matches.forEach((m, idx) => {
+        const ai = m[1];
+        const val = m[2];
+        if (idx > 0) {
+          const prevAi = matches[idx - 1][1];
+          const prevVal = matches[idx - 1][2];
+          const isFixed = fixedLengthAI.has(prevAi) && (
+            (['01', '02', '03', '04'].includes(prevAi)) ? prevVal.length === 14 :
+            (['11', '12', '13', '14', '15', '16', '17'].includes(prevAi)) ? prevVal.length === 6 :
+            prevAi === '20' ? prevVal.length === 2 : false
+          );
+          if (!isFixed) {
+            result += GS;
+          }
+        }
+        result += ai + val;
+      });
+
+      return { text: result, isGs1: true };
+    }
+
+    async function renderAll() {
+      const inputEl = document.getElementById('codesInput');
+      const gridEl = document.getElementById('outputGrid');
+      const statusEl = document.getElementById('statusBar');
+      const mode = document.getElementById('encodeMode').value;
+
+      statusEl.textContent = 'Загрузка библиотеки bwip-js...';
+
+      let bwip;
+      try {
+        bwip = await loadBwip();
+      } catch (e) {
+        statusEl.textContent = 'Библиотека bwip-js не загрузилась. Проверь интернет/блокировщик или CDN.';
+        return;
+      }
+
+      const lines = inputEl.value
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
+
+      gridEl.innerHTML = '';
+
+      if (!lines.length) {
+        statusEl.textContent = 'Нет строк для генерации.';
+        return;
+      }
+
+      let okCount = 0;
+
+      lines.forEach((line, idx) => {
+        const prepared = preparePayload(line, mode);
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const title = document.createElement('div');
+        title.className = 'card-title';
+        title.textContent = `#${idx + 1}`;
+
+        const box = document.createElement('div');
+        box.className = 'matrix-box';
+
+        const canvas = document.createElement('canvas');
+        box.appendChild(canvas);
+
+        const raw = document.createElement('div');
+        raw.className = 'raw-code';
+        raw.textContent = line;
+
+        card.appendChild(title);
+        card.appendChild(box);
+        card.appendChild(raw);
+        gridEl.appendChild(card);
+
+        try {
+          bwip.toCanvas(canvas, {
+            bcid: prepared.isGs1 ? 'gs1datamatrix' : 'datamatrix',
+            text: prepared.text,
+            scale: 5,
+            padding: 2
+          });
+          title.textContent = `#${idx + 1} · ${canvas.width}×${canvas.height}px`;
+          okCount++;
+        } catch (err) {
+          title.textContent = `#${idx + 1} · ошибка`;
+          raw.textContent = `${line} — ${err.message || err}`;
+        }
+      });
+
+      statusEl.textContent = `Сгенерировано кодов: ${okCount} из ${lines.length} (режим: ${mode === 'gs1' ? 'GS1 DataMatrix' : 'Как есть'}).`;
+    }
+
+    function syncThemeLabels() {
+      const isLight = document.body.classList.contains('light');
+      const text = isLight ? 'Тёмная' : 'Светлая';
+      document.getElementById('themeLabelTop').textContent = text;
+      document.getElementById('themeLabelFooter').textContent = text;
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('light');
+      syncThemeLabels();
+    }
+
+    document.getElementById('renderBtn').addEventListener('click', renderAll);
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      document.getElementById('codesInput').value = '';
+      document.getElementById('outputGrid').innerHTML = '';
+      document.getElementById('statusBar').textContent = 'Очищено.';
+    });
+    document.getElementById('themeToggleTop').addEventListener('click', toggleTheme);
+    document.getElementById('themeToggleFooter').addEventListener('click', toggleTheme);
+
+    syncThemeLabels();
+    renderAll();
+  </script>
+</body>
+</html>
