@@ -599,6 +599,16 @@
       color: var(--text);
     }
 
+    .serial-line {
+      margin-top: 4px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.25;
+      color: var(--accent);
+      word-break: break-all;
+    }
+
     .raw-code {
       margin-top: 6px;
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -639,12 +649,12 @@
 
     @media print {
       @page {
-        size: var(--print-page-w, 43mm) var(--print-page-h, 25mm);
+        size: var(--print-page-w, 25mm) var(--print-page-h, 43mm);
         margin: 0;
       }
 
       html, body {
-        width: var(--print-page-w, 43mm) !important;
+        width: var(--print-page-w, 25mm) !important;
         margin: 0 !important;
         padding: 0 !important;
         background: #ffffff !important;
@@ -659,7 +669,7 @@
 
       .grid {
         display: block !important;
-        width: var(--print-page-w, 43mm) !important;
+        width: var(--print-page-w, 25mm) !important;
       }
 
       .dm-card {
@@ -667,8 +677,8 @@
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
-        width: var(--print-page-w, 43mm) !important;
-        height: var(--print-page-h, 25mm) !important;
+        width: var(--print-page-w, 25mm) !important;
+        height: var(--print-page-h, 43mm) !important;
         padding: 0 !important;
         margin: 0 !important;
         border: none !important;
@@ -692,10 +702,10 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         width: 100%;
         height: 100%;
-        padding: var(--print-pad-y, 0.8mm) var(--print-pad-x, 1.2mm);
+        padding: var(--print-pad-y, 0.5mm) var(--print-pad-x, 1mm);
         transform: translate(var(--print-offset-x, 0mm), var(--print-offset-y, 0mm));
       }
 
@@ -703,8 +713,8 @@
         background: #ffffff !important;
         padding: 0 !important;
         border-radius: 0 !important;
-        width: var(--print-matrix-size, 14.5mm) !important;
-        height: var(--print-matrix-size, 14.5mm) !important;
+        width: var(--print-matrix-size, 15mm) !important;
+        height: var(--print-matrix-size, 15mm) !important;
         flex-shrink: 0;
       }
 
@@ -714,7 +724,21 @@
         font-weight: 700;
         line-height: 1.1;
         color: #000000;
-        margin-top: 0.4mm;
+        margin-top: 0.2mm;
+      }
+
+      .print-serial {
+        display: block !important;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: calc(var(--print-font-size, 6.5pt) * 0.78);
+        font-weight: 600;
+        line-height: 1.1;
+        color: #000000;
+        margin-top: 0.3mm;
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .print-name {
@@ -745,6 +769,7 @@
     }
 
     .print-marker,
+    .print-serial,
     .print-name,
     .print-raw {
       display: none;
@@ -753,10 +778,10 @@
 </head>
 <body>
   <header class="page-header">
-    <div class="ts-bar" aria-label="Tom Studio — Project Matrix · v9">
+    <div class="ts-bar" aria-label="Tom Studio — Project Matrix · v10">
       <span class="ts-brand">Tom Studio</span>
       <span class="ts-divider" aria-hidden="true"></span>
-      <span class="ts-project">Project Matrix · v9</span>
+      <span class="ts-project">Project Matrix · v10</span>
     </div>
   </header>
 
@@ -821,11 +846,11 @@
       <div class="settings-grid-3">
         <div class="mini-field">
           <span>Ширина ленты (мм)</span>
-          <input type="number" id="labelWidthMm" value="43" min="15" max="150" step="0.5" />
+          <input type="number" id="labelWidthMm" value="25" min="15" max="150" step="0.5" />
         </div>
         <div class="mini-field">
           <span>Высота этикетки (мм)</span>
-          <input type="number" id="labelHeightMm" value="25" min="10" max="150" step="0.5" />
+          <input type="number" id="labelHeightMm" value="43" min="10" max="150" step="0.5" />
         </div>
         <div class="mini-field">
           <span>Размер матрицы (мм)</span>
@@ -880,11 +905,19 @@
         </div>
       </label>
 
+      <label class="checkbox-row" for="showSerialCheck">
+        <input type="checkbox" id="showSerialCheck" />
+        <div>
+          <span class="checkbox-text">Показывать серийный номер (AI 21)</span>
+          <span class="checkbox-sub">Извлекается из кода маркировки и выводится под матрицей</span>
+        </div>
+      </label>
+
       <label class="checkbox-row" for="showRawCodeCheck">
         <input type="checkbox" id="showRawCodeCheck" />
         <div>
           <span class="checkbox-text">Печатать текстовую строку кода под матрицей</span>
-          <span class="checkbox-sub">По умолчанию выключено для чистоты термопечати 43×25 мм</span>
+          <span class="checkbox-sub">По умолчанию выключено для чистоты термопечати 25×43 мм</span>
         </div>
       </label>
     </div>
@@ -920,7 +953,7 @@
       <div class="panel-title" style="margin: 0;">Строки Base64 / GS1 / SSCC (по одной на строку)</div>
       <div class="btn-row">
         <button type="button" class="action-btn primary" id="renderBtn">Сгенерировать коды</button>
-        <button type="button" class="action-btn primary" id="pdfBtn">Скачать PDF 43×25 мм</button>
+        <button type="button" class="action-btn primary" id="pdfBtn">Скачать PDF 25×43 мм</button>
         <button type="button" class="action-btn" id="printBtn">Печать (1 ряд)</button>
         <button type="button" class="action-btn" id="clearBtn">Очистить</button>
       </div>
@@ -932,11 +965,11 @@
   <div class="grid" id="outputGrid"></div>
 
   <footer class="page-footer">
-    <div class="ts-bar" aria-label="Tom Studio — Project Matrix · v9">
+    <div class="ts-bar" aria-label="Tom Studio — Project Matrix · v10">
       <span class="ts-brand">Tom Studio</span>
       <button type="button" class="bulb-btn" id="bulbToggle" aria-label="Переключить тему" title="Переключить тему">💡</button>
       <span class="ts-divider" aria-hidden="true"></span>
-      <span class="ts-project">Project Matrix · v9</span>
+      <span class="ts-project">Project Matrix · v10</span>
     </div>
   </footer>
 
@@ -1379,6 +1412,32 @@
       return '';
     }
 
+    function extractSerialFromTextOrBytes(rawLine, bytes) {
+      const line = String(rawLine || '').trim();
+      const parenSerial = line.match(/\(21\)([^\(\x1d<]+)/);
+      if (parenSerial && parenSerial[1]) {
+        const cleaned = parenSerial[1].replace(/<GS>/gi, '').trim();
+        if (cleaned) return cleaned;
+      }
+
+      if (bytes && bytes.length >= 18 && bytes[0] === 48 && bytes[1] === 49) {
+        const ascii = bytesToAscii(bytes);
+        if (ascii.slice(16, 18) === '21') {
+          const rest = ascii.slice(18);
+          const gsIdx = rest.indexOf('\x1d');
+          const rawSerial = gsIdx >= 0 ? rest.slice(0, gsIdx) : rest;
+          if (rawSerial) return rawSerial;
+        }
+      }
+
+      const plainSerial = line.match(/^01\d{14}21([^\x1d<]+)/);
+      if (plainSerial && plainSerial[1]) {
+        return plainSerial[1].replace(/<GS>/gi, '').trim();
+      }
+
+      return '';
+    }
+
     function prepareBytes(rawLine, mode) {
       const line = rawLine.trim();
       if (mode === 'raw') {
@@ -1386,7 +1445,14 @@
         for (let i = 0; i < line.length; i++) arr.push(line.charCodeAt(i) & 0xff);
         const bytes = new Uint8Array(arr);
         const isBox = Boolean(normalizeSsccString(line)) || isSsccBytes(bytes);
-        return { bytes, isGs1: false, label: line, isBox, gtin: '' };
+        return {
+          bytes,
+          isGs1: false,
+          label: line,
+          isBox,
+          gtin: extractGtinFromTextOrBytes(line, bytes),
+          serial: extractSerialFromTextOrBytes(line, bytes)
+        };
       }
 
       const directSscc = normalizeSsccString(line);
@@ -1398,7 +1464,8 @@
           isGs1: true,
           label: line,
           isBox: true,
-          gtin: ''
+          gtin: '',
+          serial: ''
         };
       }
 
@@ -1410,7 +1477,8 @@
           isGs1: true,
           label: line,
           isBox,
-          gtin: extractGtinFromTextOrBytes(line, bytes)
+          gtin: extractGtinFromTextOrBytes(line, bytes),
+          serial: extractSerialFromTextOrBytes(line, bytes)
         };
       }
 
@@ -1423,7 +1491,8 @@
           isGs1: true,
           label: line,
           isBox: false,
-          gtin: extractGtinFromTextOrBytes(line, bytes)
+          gtin: extractGtinFromTextOrBytes(line, bytes),
+          serial: extractSerialFromTextOrBytes(line, bytes)
         };
       }
 
@@ -1438,7 +1507,8 @@
         isGs1: true,
         label: vis,
         isBox,
-        gtin: extractGtinFromTextOrBytes(vis, bytes)
+        gtin: extractGtinFromTextOrBytes(vis, bytes),
+        serial: extractSerialFromTextOrBytes(vis, bytes)
       };
     }
 
@@ -1461,7 +1531,8 @@
         ...assembled,
         label: prepared.label,
         isBox: prepared.isBox,
-        gtin: prepared.gtin
+        gtin: prepared.gtin,
+        serial: prepared.serial
       };
     }
 
@@ -1676,14 +1747,16 @@
       return annotations;
     }
 
-    function computeSafeLabelLayout(wMm, hMm, requestedMatrixMm, hasTop, hasBottom) {
-      const edgePadMm = 0.7;
-      const topBandMm = hasTop ? 2.6 : 0;
+    function computeSafeLabelLayout(wMm, hMm, requestedMatrixMm, hasTop, hasSerial, hasBottom) {
+      const edgePadMm = 0.55;
+      const topBandMm = hasTop ? 2.2 : 0;
+      const serialBandMm = hasSerial ? 2.4 : 0;
       const bottomBandMm = hasBottom ? 5.2 : 0;
-      const gapMm = 0.45;
+      const topGapMm = hasTop ? 0.35 : 0;
+      const bottomGapMm = (hasSerial || hasBottom) ? 0.45 : 0;
 
-      const topReserve = edgePadMm + topBandMm + (hasTop ? gapMm : 0);
-      const bottomReserve = edgePadMm + bottomBandMm + (hasBottom ? gapMm : 0);
+      const topReserve = edgePadMm + topBandMm + topGapMm;
+      const bottomReserve = edgePadMm + serialBandMm + bottomBandMm + bottomGapMm;
 
       const maxByHeight = Math.max(5.5, hMm - topReserve - bottomReserve);
       const maxByWidth = Math.max(5.5, wMm - edgePadMm * 2);
@@ -1692,21 +1765,26 @@
       return {
         edgePadMm,
         topBandMm,
+        serialBandMm,
         bottomBandMm,
-        gapMm,
+        topGapMm,
+        bottomGapMm,
+        topReserve,
+        bottomReserve,
         safeMatrixMm
       };
     }
 
     function syncPrintCssVars() {
-      const w = Math.max(15, Number(document.getElementById('labelWidthMm').value) || 43);
-      const h = Math.max(10, Number(document.getElementById('labelHeightMm').value) || 25);
+      const w = Math.max(15, Number(document.getElementById('labelWidthMm').value) || 25);
+      const h = Math.max(10, Number(document.getElementById('labelHeightMm').value) || 43);
       const reqM = Math.max(6, Number(document.getElementById('matrixSizeMm').value) || 15);
       const showMarkers = document.getElementById('showMarkersCheck').checked;
+      const showSerial = document.getElementById('showSerialCheck').checked;
       const showName = document.getElementById('showProductNameCheck').checked;
       const showRaw = document.getElementById('showRawCodeCheck').checked;
 
-      const layout = computeSafeLabelLayout(w, h, reqM, showMarkers, showName || showRaw);
+      const layout = computeSafeLabelLayout(w, h, reqM, showMarkers, showSerial, showName || showRaw);
       const ox = Number(document.getElementById('offsetXMm').value) || 0;
       const oy = Number(document.getElementById('offsetYMm').value) || 0;
 
@@ -1727,6 +1805,7 @@
       const modeEl = document.getElementById('inputMode');
       const skipEmptyEl = document.getElementById('skipEmptyCheck');
       const showMarkersEl = document.getElementById('showMarkersCheck');
+      const showSerialEl = document.getElementById('showSerialCheck');
       const showProductNameEl = document.getElementById('showProductNameCheck');
       const showRawCodeEl = document.getElementById('showRawCodeCheck');
       const defaultBoxNum = Number(document.getElementById('defaultBoxNum').value) || 1;
@@ -1770,6 +1849,9 @@
           const productTitle = showProductNameEl.checked
             ? (res.isBox ? '' : lookupProductNameByGtin(res.gtin))
             : '';
+          const serialText = showSerialEl.checked && !res.isBox && res.serial
+            ? `SN: ${res.serial}`
+            : '';
 
           const card = document.createElement('div');
           card.className = res.isBox ? 'dm-card is-box' : 'dm-card';
@@ -1784,14 +1866,19 @@
             <div class="label-sheet-inner">
               <div class="matrix-box">${matrixToSvg(res.matrix, res.totalRows, res.totalCols)}</div>
               <div class="print-marker">${showMarkersEl.checked ? (ann.markerText || '') : ''}</div>
+              <div class="serial-line print-serial"></div>
               <div class="gtin-product-name print-name"></div>
               <div class="raw-code print-raw"></div>
             </div>
           `;
 
+          card.querySelector('.serial-line').textContent = serialText;
           card.querySelector('.gtin-product-name').textContent = productTitle;
           card.querySelector('.raw-code').textContent = showRawCodeEl.checked ? res.label : '';
 
+          if (!serialText) {
+            card.querySelector('.serial-line').style.display = 'none';
+          }
           if (!productTitle) {
             card.querySelector('.gtin-product-name').style.display = 'none';
           }
@@ -1803,6 +1890,7 @@
           lastRenderedCardsData.push({
             res,
             markerText: showMarkersEl.checked ? (ann.markerText || '') : '',
+            serialText,
             productTitle,
             rawText: showRawCodeEl.checked ? res.label : ''
           });
@@ -1915,7 +2003,6 @@
         lines.push(current);
       }
 
-      // Если остаток не влез — подрезаем последнюю строку с многоточием
       const joinedCount = lines.join(' ').length;
       const hasOverflow = joinedCount < clean.length || (current && lines.length === maxLines && !lines.join(' ').endsWith(current));
       if (hasOverflow && lines.length > 0) {
@@ -1929,11 +2016,14 @@
       return lines;
     }
 
-    function renderTextLabelBitmap360Dpi(text, maxWidthMm, maxHeightMm, preferredFontPt, bold = true, maxLines = 2) {
+    function renderTextLabelBitmap360Dpi(text, maxWidthMm, maxHeightMm, preferredFontPt, bold = true, maxLines = 2, mono = false) {
       const dpi = 360;
       const pxPerMm = dpi / 25.4;
       const maxPx = Math.max(36, Math.floor(maxWidthMm * pxPerMm));
-      const maxBoxPx = Math.max(16, Math.floor(maxHeightMm * pxPerMm));
+      const maxBoxPx = Math.max(14, Math.floor(maxHeightMm * pxPerMm));
+      const fontFamily = mono
+        ? 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'
+        : '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
 
       let fontPt = preferredFontPt;
       let fontPx = Math.max(12, Math.round(fontPt * (dpi / 72)));
@@ -1942,11 +2032,11 @@
       const measureCanvas = document.createElement('canvas');
       const mCtx = measureCanvas.getContext('2d');
 
-      for (let pt = preferredFontPt; pt >= 4.2; pt -= 0.4) {
-        const px = Math.max(12, Math.round(pt * (dpi / 72)));
-        mCtx.font = `${bold ? '700' : '600'} ${px}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif`;
+      for (let pt = preferredFontPt; pt >= 4.0; pt -= 0.4) {
+        const px = Math.max(11, Math.round(pt * (dpi / 72)));
+        mCtx.font = `${bold ? '700' : '600'} ${px}px ${fontFamily}`;
         const candidateLines = wrapTextToLines(mCtx, text, maxPx, maxLines);
-        const lineHeightPx = Math.ceil(px * 1.16);
+        const lineHeightPx = Math.ceil(px * 1.15);
         const totalLinesPx = candidateLines.length * lineHeightPx;
 
         fontPt = pt;
@@ -1965,16 +2055,16 @@
         lines = [String(text || '').trim()];
       }
 
-      const lineHeightPx = Math.ceil(fontPx * 1.16);
+      const lineHeightPx = Math.ceil(fontPx * 1.15);
       const canvas = document.createElement('canvas');
       const textW = maxPx;
-      const textH = Math.max(14, Math.min(maxBoxPx, lines.length * lineHeightPx + Math.ceil(fontPx * 0.18)));
+      const textH = Math.max(12, Math.min(maxBoxPx, lines.length * lineHeightPx + Math.ceil(fontPx * 0.16)));
       canvas.width = textW;
       canvas.height = textH;
 
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, textW, textH);
-      ctx.font = `${bold ? '700' : '600'} ${fontPx}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif`;
+      ctx.font = `${bold ? '700' : '600'} ${fontPx}px ${fontFamily}`;
       ctx.fillStyle = '#000000';
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'center';
@@ -2016,17 +2106,18 @@
         return;
       }
 
-      const wMm = Math.max(15, Number(document.getElementById('labelWidthMm').value) || 43);
-      const hMm = Math.max(10, Number(document.getElementById('labelHeightMm').value) || 25);
+      const wMm = Math.max(15, Number(document.getElementById('labelWidthMm').value) || 25);
+      const hMm = Math.max(10, Number(document.getElementById('labelHeightMm').value) || 43);
       const reqMatrixMm = Math.max(6, Number(document.getElementById('matrixSizeMm').value) || 15);
       const oxMm = Number(document.getElementById('offsetXMm').value) || 0;
       const oyMm = Number(document.getElementById('offsetYMm').value) || 0;
 
       const showMarkers = document.getElementById('showMarkersCheck').checked;
+      const showSerial = document.getElementById('showSerialCheck').checked;
       const showName = document.getElementById('showProductNameCheck').checked;
       const showRaw = document.getElementById('showRawCodeCheck').checked;
 
-      const layout = computeSafeLabelLayout(wMm, hMm, reqMatrixMm, showMarkers, showName || showRaw);
+      const layout = computeSafeLabelLayout(wMm, hMm, reqMatrixMm, showMarkers, showSerial, showName || showRaw);
 
       const mmToPt = (mm) => (mm * 72) / 25.4;
       const pageW = mmToPt(wMm);
@@ -2036,13 +2127,13 @@
       const shiftYPt = mmToPt(oyMm);
 
       const captionCache = new Map();
-      function getOrCreateCaptionXObject(text, maxWidthMm, maxHeightMm, fontPt, bold, maxLines) {
-        const key = `${bold ? 'B' : 'R'}|${fontPt}|${maxLines}|${maxWidthMm.toFixed(2)}|${maxHeightMm.toFixed(2)}|${text}`;
+      function getOrCreateCaptionXObject(text, maxWidthMm, maxHeightMm, fontPt, bold, maxLines, mono = false) {
+        const key = `${mono ? 'M' : 'S'}|${bold ? 'B' : 'R'}|${fontPt}|${maxLines}|${maxWidthMm.toFixed(2)}|${maxHeightMm.toFixed(2)}|${text}`;
         if (captionCache.has(key)) {
           return captionCache.get(key);
         }
 
-        const bmp = renderTextLabelBitmap360Dpi(text, maxWidthMm, maxHeightMm, fontPt, bold, maxLines);
+        const bmp = renderTextLabelBitmap360Dpi(text, maxWidthMm, maxHeightMm, fontPt, bold, maxLines, mono);
         const smaskId = addObj('');
         objects[smaskId - 1] = {
           binHeader: `<< /Type /XObject /Subtype /Image /Width ${bmp.width} /Height ${bmp.height} /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /FlateDecode /Length ${bmp.alphaZlib.length} >>\nstream\n`,
@@ -2077,23 +2168,33 @@
       const pageIds = [];
       const maxCaptionWidthMm = Math.max(12, wMm - layout.edgePadMm * 2);
 
-      // В PDF координаты Y идут снизу вверх (0 = низ страницы, pageH = верх страницы)
+      // Координаты Y в PDF идут снизу вверх; матрицу размещаем ближе к верхнему маркеру
       const topBandBottomPt = pageH - mmToPt(layout.edgePadMm + layout.topBandMm);
       const topBandHeightPt = mmToPt(layout.topBandMm);
 
       const bottomBandBottomPt = mmToPt(layout.edgePadMm);
       const bottomBandHeightPt = mmToPt(layout.bottomBandMm);
 
+      const serialBandBottomPt = mmToPt(layout.edgePadMm + (showName || showRaw ? layout.bottomBandMm + 0.35 : 0));
+      const serialBandHeightPt = mmToPt(layout.serialBandMm);
+
       const middleTopPt = showMarkers
-        ? pageH - mmToPt(layout.edgePadMm + layout.topBandMm + layout.gapMm)
+        ? pageH - mmToPt(layout.edgePadMm + layout.topBandMm + layout.topGapMm)
         : pageH - mmToPt(layout.edgePadMm);
-      const middleBottomPt = (showName || showRaw)
-        ? mmToPt(layout.edgePadMm + layout.bottomBandMm + layout.gapMm)
-        : mmToPt(layout.edgePadMm);
-      const middleCenterYPt = (middleTopPt + middleBottomPt) / 2;
+      const middleBottomPt = mmToPt(
+        layout.edgePadMm +
+        (showName || showRaw ? layout.bottomBandMm : 0) +
+        (showSerial ? layout.serialBandMm : 0) +
+        layout.bottomGapMm
+      );
+      const matrixTopPt = middleTopPt - mmToPt(0.25);
+      const matrixCenterYPt = Math.max(
+        middleBottomPt + matrixPt / 2,
+        matrixTopPt - matrixPt / 2
+      );
 
       for (const item of lastRenderedCardsData) {
-        const { res, markerText, productTitle, rawText } = item;
+        const { res, markerText, serialText, productTitle, rawText } = item;
         const cols = res.totalCols;
         const rows = res.totalRows;
         const cellSize = matrixPt / Math.max(cols, rows);
@@ -2101,12 +2202,11 @@
         const matrixH = rows * cellSize;
 
         const startX = (pageW - matrixW) / 2 + shiftXPt;
-        const startYBottom = middleCenterYPt - matrixH / 2 - shiftYPt;
+        const startYBottom = matrixCenterYPt - matrixH / 2 - shiftYPt;
 
         const streamCmds = [];
         streamCmds.push('0 0 0 rg');
 
-        // Чёткий векторный DataMatrix ECC200 строго в средней зоне между верхним и нижним текстом
         for (let r = 0; r < rows; r++) {
           for (let c = 0; c < cols; c++) {
             if (res.matrix[r][c] === 1) {
@@ -2122,11 +2222,20 @@
         const pageXObjects = [];
 
         if (markerText) {
-          const cap = getOrCreateCaptionXObject(markerText, maxCaptionWidthMm, layout.topBandMm, 6.4, true, 1);
+          const cap = getOrCreateCaptionXObject(markerText, maxCaptionWidthMm, layout.topBandMm, 6.4, true, 1, false);
           const xName = `ImM${cap.xobjId}`;
           pageXObjects.push(`/${xName} ${cap.xobjId} 0 R`);
           const ix = ((pageW - cap.wPt) / 2 + shiftXPt).toFixed(3);
           const iy = (topBandBottomPt + (topBandHeightPt - cap.hPt) / 2 - shiftYPt).toFixed(3);
+          streamCmds.push(`q ${cap.wPt.toFixed(3)} 0 0 ${cap.hPt.toFixed(3)} ${ix} ${iy} cm /${xName} Do Q`);
+        }
+
+        if (serialText) {
+          const cap = getOrCreateCaptionXObject(serialText, maxCaptionWidthMm, layout.serialBandMm, 4.9, true, 1, true);
+          const xName = `ImS${cap.xobjId}`;
+          pageXObjects.push(`/${xName} ${cap.xobjId} 0 R`);
+          const ix = ((pageW - cap.wPt) / 2 + shiftXPt).toFixed(3);
+          const iy = (serialBandBottomPt + (serialBandHeightPt - cap.hPt) / 2 - shiftYPt).toFixed(3);
           streamCmds.push(`q ${cap.wPt.toFixed(3)} 0 0 ${cap.hPt.toFixed(3)} ${ix} ${iy} cm /${xName} Do Q`);
         }
 
@@ -2138,7 +2247,8 @@
             layout.bottomBandMm,
             productTitle ? 5.8 : 5.0,
             Boolean(productTitle),
-            2
+            2,
+            !productTitle
           );
           const xName = `ImB${cap.xobjId}`;
           pageXObjects.push(`/${xName} ${cap.xobjId} 0 R`);
@@ -2205,7 +2315,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `matrix_labels_${wMm}x${hMm}mm_v9.pdf`;
+      a.download = `matrix_labels_${wMm}x${hMm}mm_v10.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -2546,7 +2656,7 @@
       setBanner('Очищено.');
     });
 
-    ['inputMode', 'numberingModeSelect', 'skipEmptyCheck', 'showMarkersCheck', 'showProductNameCheck', 'showRawCodeCheck', 'gtinSourceSelect'].forEach((id) => {
+    ['inputMode', 'numberingModeSelect', 'skipEmptyCheck', 'showMarkersCheck', 'showSerialCheck', 'showProductNameCheck', 'showRawCodeCheck', 'gtinSourceSelect'].forEach((id) => {
       document.getElementById(id).addEventListener('change', () => renderAll());
     });
 
