@@ -25,6 +25,9 @@
       --info-text: #174ea6;
       --info-bg: #e8f0fe;
       --info-border: #d2e3fc;
+      --ip-bg: #e0f2fe;
+      --ip-text: #0369a1;
+      --ip-border: #bae6fd;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -47,6 +50,9 @@
         --info-text: #bfdbfe;
         --info-bg: rgba(59, 130, 246, 0.14);
         --info-border: rgba(59, 130, 246, 0.35);
+        --ip-bg: rgba(14, 165, 233, 0.15);
+        --ip-text: #7dd3fc;
+        --ip-border: rgba(14, 165, 233, 0.35);
       }
     }
 
@@ -86,7 +92,7 @@
       box-shadow: var(--shadow);
     }
 
-    label {
+    label.field-label {
       display: block;
       margin-top: 12px;
       font-weight: 600;
@@ -96,7 +102,7 @@
       letter-spacing: 0.03em;
     }
 
-    label:first-child {
+    label.field-label:first-child {
       margin-top: 0;
     }
 
@@ -123,6 +129,41 @@
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
+    }
+
+    .checkbox-row {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: var(--card-2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .checkbox-text {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .checkbox-sub {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 400;
+      color: var(--muted);
+      margin-top: 1px;
     }
 
     .hint {
@@ -227,6 +268,20 @@
       font-weight: 700;
       font-size: 0.98rem;
       color: var(--text);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .ip-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--ip-bg);
+      color: var(--ip-text);
+      border: 1px solid var(--ip-border);
     }
 
     .rec-specs {
@@ -271,6 +326,16 @@
       color: var(--muted);
     }
 
+    .empty-state {
+      background: var(--card);
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+
     @media (max-width: 440px) {
       .summary-grid {
         grid-template-columns: 1fr;
@@ -284,35 +349,44 @@
   <div class="card">
     <div class="row-2">
       <div>
-        <label for="lengthM">Длина, м</label>
+        <label class="field-label" for="lengthM">Длина, м</label>
         <input type="number" id="lengthM" min="0.1" step="0.1" placeholder="Напр. 5" onclick="this.select()">
       </div>
       <div>
-        <label for="widthM">Ширина, м</label>
+        <label class="field-label" for="widthM">Ширина, м</label>
         <input type="number" id="widthM" min="0.1" step="0.1" placeholder="Напр. 4" onclick="this.select()">
       </div>
     </div>
 
     <div class="row-2">
       <div>
-        <label for="areaM2">Площадь, м²</label>
+        <label class="field-label" for="areaM2">Площадь, м²</label>
         <input type="number" id="areaM2" min="0.1" step="0.1" value="20" onclick="this.select()">
       </div>
       <div>
-        <label for="heightM">Высота потолка, м</label>
+        <label class="field-label" for="heightM">Высота потолка, м</label>
         <input type="number" id="heightM" min="1.5" max="15" step="0.1" value="2.7" onclick="this.select()">
       </div>
     </div>
 
-    <label for="roomType">Назначение помещения (ориентир по нормам)</label>
+    <label class="field-label" for="roomType">Назначение помещения (ориентир по нормам)</label>
     <select id="roomType">
-      <option value="living" data-lux="150" data-uf="0.48" data-mf="1.25">Жилая комната / зал (норма ~150 лк)</option>
-      <option value="kitchen" data-lux="250" data-uf="0.50" data-mf="1.30">Кухня / рабочая зона (норма ~250 лк)</option>
-      <option value="office" data-lux="300" data-uf="0.52" data-mf="1.25">Кабинет / офис (норма ~300 лк)</option>
-      <option value="bath" data-lux="150" data-uf="0.45" data-mf="1.35">Санузел / баня / влажная зона (норма ~150 лк)</option>
-      <option value="warehouse" data-lux="200" data-uf="0.46" data-mf="1.40">Склад / подсобка / гараж / зал (норма ~200 лк)</option>
-      <option value="hall" data-lux="100" data-uf="0.45" data-mf="1.30">Коридор / прихожая / лестница (норма ~100 лк)</option>
+      <option value="living" data-lux="150" data-uf="0.48" data-mf="1.25" data-wet="0">Жилая комната / зал (норма ~150 лк)</option>
+      <option value="kitchen" data-lux="250" data-uf="0.50" data-mf="1.30" data-wet="0">Кухня / рабочая зона (норма ~250 лк)</option>
+      <option value="office" data-lux="300" data-uf="0.52" data-mf="1.25" data-wet="0">Кабинет / офис (норма ~300 лк)</option>
+      <option value="bath" data-lux="150" data-uf="0.45" data-mf="1.35" data-wet="1">Санузел / влажная зона (норма ~150 лк)</option>
+      <option value="carwash" data-lux="400" data-uf="0.46" data-mf="1.45" data-wet="1">Автомойка (норма ~400 лк)</option>
+      <option value="warehouse" data-lux="200" data-uf="0.46" data-mf="1.40" data-wet="0">Склад / подсобка / гараж (норма ~200 лк)</option>
+      <option value="hall" data-lux="100" data-uf="0.45" data-mf="1.30" data-wet="0">Коридор / прихожая / лестница (норма ~100 лк)</option>
     </select>
+
+    <label class="checkbox-row" for="onlyIp65">
+      <input type="checkbox" id="onlyIp65">
+      <div>
+        <span class="checkbox-text">Только влагозащищённые (IP65)</span>
+        <span class="checkbox-sub">Исключает светильники IP20 (включается сам для влажных зон)</span>
+      </div>
+    </label>
 
     <div id="catalogStatus" class="catalog-status">Загружаем каталог светильников из luminaires.txt...</div>
   </div>
@@ -339,14 +413,13 @@
 
   <script>
     const CATALOG_FILE = "luminaires.txt";
-    // Поправочный коэффициент на реальную обстановку (мебель, потери отражённого света, тени)
     const REAL_ROOM_FACTOR = 1.5;
 
     const DEFAULT_LUMINAIRES = [
-      { name: "НБП 12-60-001 (влагозащищённый)", watts: 12, lumens: 1080, price: 650 },
-      { name: "НБП 18-60-002 (дерево/баня)", watts: 18, lumens: 1550, price: 1290 },
-      { name: "Панель LED 36Вт 600×600", watts: 36, lumens: 3600, price: 1150 },
-      { name: "Линейный LED 24Вт", watts: 24, lumens: 2400, price: 890 }
+      { name: "НБП 12-60-001 (влагозащищённый)", watts: 12, lumens: 1080, price: 650, ip: "IP65" },
+      { name: "Линейный герметичный 36Вт", watts: 36, lumens: 3400, price: 890, ip: "IP65" },
+      { name: "СПО 36Вт", watts: 36, lumens: 3200, price: 250, ip: "IP20" },
+      { name: "СПО 45Вт", watts: 45, lumens: 3800, price: 300, ip: "IP20" }
     ];
 
     let luminaires = [...DEFAULT_LUMINAIRES];
@@ -356,10 +429,25 @@
     const areaEl = document.getElementById("areaM2");
     const heightEl = document.getElementById("heightM");
     const roomTypeEl = document.getElementById("roomType");
+    const onlyIp65El = document.getElementById("onlyIp65");
     const catalogStatusEl = document.getElementById("catalogStatus");
     const reqLumensEl = document.getElementById("reqLumens");
     const calcAreaEl = document.getElementById("calcArea");
     const recBoxEl = document.getElementById("recommendationsBox");
+
+    function normalizeIp(rawIp, name) {
+      const source = `${rawIp || ""} ${name || ""}`.toUpperCase();
+      const match = source.match(/IP\s*(\d{2})/);
+      if (match) {
+        return `IP${match[1]}`;
+      }
+      return "IP20";
+    }
+
+    function isWetProtected(ip) {
+      const num = parseInt(ip.replace(/\D/g, ""), 10) || 20;
+      return num >= 54;
+    }
 
     function parseCatalogText(text) {
       const parsed = [];
@@ -377,9 +465,11 @@
         const watts = parseFloat(parts[1].replace(",", ".")) || 0;
         const lumens = parseFloat(parts[2].replace(",", ".")) || 0;
         const price = parts.length > 3 ? (parseFloat(parts[3].replace(",", ".")) || 0) : 0;
+        const rawIp = parts.length > 4 ? parts[4] : "";
+        const ip = normalizeIp(rawIp, name);
 
         if (name && lumens > 0) {
-          parsed.push({ name, watts, lumens, price });
+          parsed.push({ name, watts, lumens, price, ip });
         }
       }
       return parsed;
@@ -394,8 +484,9 @@
 
         if (items.length > 0) {
           luminaires = items;
+          const ip65Count = items.filter(i => isWetProtected(i.ip)).length;
           catalogStatusEl.className = "catalog-status";
-          catalogStatusEl.textContent = `Каталог загружен из ${CATALOG_FILE}: позиций — ${items.length}`;
+          catalogStatusEl.textContent = `Каталог загружен из ${CATALOG_FILE}: всего — ${items.length} (влагозащищённых IP65 — ${ip65Count})`;
         } else {
           catalogStatusEl.className = "catalog-status warn";
           catalogStatusEl.textContent = `${CATALOG_FILE} пуст или не содержит корректных строк — показаны базовые примеры.`;
@@ -466,6 +557,7 @@
       const lux = parseFloat(opt?.dataset?.lux) || 150;
       const baseUf = parseFloat(opt?.dataset?.uf) || 0.48;
       const mf = parseFloat(opt?.dataset?.mf) || 1.25;
+      const requireIp65 = onlyIp65El.checked;
 
       const effUf = getEffectiveUf(baseUf, l, w, area, height);
       const totalLumens = Math.ceil(((area * lux * mf) / effUf) * REAL_ROOM_FACTOR);
@@ -473,11 +565,26 @@
       calcAreaEl.textContent = `${area.toFixed(1).replace(".", ",")} м²`;
       reqLumensEl.textContent = `${totalLumens.toLocaleString("ru-RU")} лм`;
 
-      // Защита от абсурдно мощных наборов в маленьких помещениях
+      const availableLuminaires = requireIp65
+        ? luminaires.filter(item => isWetProtected(item.ip))
+        : luminaires;
+
+      recBoxEl.innerHTML = "";
+
+      if (availableLuminaires.length === 0) {
+        recBoxEl.innerHTML = `
+          <div class="empty-state">
+            В каталоге пока не найдено влагозащищённых светильников (IP65).<br>
+            Добавь в <strong>luminaires.txt</strong> модели с пометкой <strong>IP65</strong> или сними галочку выше.
+          </div>
+        `;
+        return;
+      }
+
       const maxReasonableWatts = Math.max(45, area * 26);
 
       const candidates = [];
-      luminaires.forEach(item => {
+      availableLuminaires.forEach(item => {
         const minCount = getDesiredMinCount(area, item.lumens);
         const rawApprox = totalLumens / item.lumens;
 
@@ -523,7 +630,6 @@
 
       const topList = filtered.slice(0, 5);
 
-      recBoxEl.innerHTML = "";
       topList.forEach(({ item, count, flux }) => {
         const totalWatt = item.watts > 0 ? `${(count * item.watts).toLocaleString("ru-RU")} Вт` : "—";
         const totalFluxText = `${flux.toLocaleString("ru-RU")} лм`;
@@ -537,7 +643,10 @@
         card.innerHTML = `
           <div class="rec-top">
             <div>
-              <div class="rec-title">${escapeHtml(item.name)}</div>
+              <div class="rec-title">
+                <span>${escapeHtml(item.name)}</span>
+                <span class="ip-badge">${escapeHtml(item.ip)}</span>
+              </div>
               <div class="rec-specs">${unitWattText}${item.lumens.toLocaleString("ru-RU")} лм · ${unitPriceText}</div>
             </div>
             <span class="qty-badge">${count} шт.</span>
@@ -571,7 +680,13 @@
       recalculate();
     });
 
-    roomTypeEl.addEventListener("change", recalculate);
+    roomTypeEl.addEventListener("change", () => {
+      const opt = roomTypeEl.options[roomTypeEl.selectedIndex];
+      onlyIp65El.checked = opt?.dataset?.wet === "1";
+      recalculate();
+    });
+
+    onlyIp65El.addEventListener("change", recalculate);
     heightEl.addEventListener("input", recalculate);
 
     loadCatalog();
