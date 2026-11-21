@@ -1808,80 +1808,123 @@
       }
     }
 
-    /* ================= Генерация прямого PDF 43×25 мм в браузере (с поддержкой кириллицы и кэшем) ================= */
+    /* ================= DEFLATE (FlateDecode) + 360 DPI кириллица в PDF ================= */
 
-    async function deflateBytesIfSupported(uint8Arr) {
-      if (typeof CompressionStream === 'function') {
-        try {
-          const cs = new CompressionStream('deflate');
-          const writer = cs.writable.getWriter();
-          writer.write(uint8Arr);
-          writer.close();
-          const buf = await new Response(cs.readable).arrayBuffer();
-          return { bytes: new Uint8Array(buf), compressed: true };
-        } catch (_) {}
+    const CRC32_TABLE = (() => {
+      const t = new Uint32Array(256);
+      for (let n = 0; n < 256; n++) {
+        let c = n;
+        for (let k = 0; k < 8; k++) c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
+        t[n] = c >>> 0;
       }
-      return { bytes: uint8Arr, compressed: false };
+      return t;
+    })();
+
+    function adler32(bytes) {
+      let a = 1, b = 0;
+      for (let i = 0; i < bytes.length; i++) {
+        a = (a + bytes[i]) % 65521;
+        b = (b + a) % 65521;
+      }
+      return ((b << 16) | a) >>> 0;
     }
 
-    function buildTextOverlayRgbaAlpha(markerText, bottomLabel, isTitle, wMm, hMm, topMarkerYMm, bottomTextYMm, dpi = 360) {
+    // Несжатые DEFLATE-блоки (BTYPE=00) в обёртке zlib — быстро и гарантированно валидно для /FlateDecode
+    function zlibStoreCompress(rawBytes) {
+      const parts = [];
+      parts.push(new Uint8Array([0x78, 0x01]));
+      let offset = 0;
+      while (offset < rawBytes.length) {
+        const len = Math.min(65535, rawBytes.length - offset);
+        const isFinal = (offset + len >= rawBytes.length) ? 1 : 0;
+        const hdr = new Uint8Array(5);
+        hdr[0] = isFinal;
+        hdr[1] = len & 0xff;
+        hdr[2] = (len >>> 8) & 0xff;
+        const nlen = (~len) & 0xffff;
+        hdr[3] = nlen & 0xff;
+        hdr[4] = (nlen >>> 8) & 0xff;
+        parts.push(hdr);
+        parts.push(rawBytes.subarray(offset, offset + len));
+        offset += len;
+      }
+      if (rawBytes.length === 0) {
+        parts.push(new Uint8Array([0x01, 0x00, 0x00, 0xff, 0xff]));
+      }
+      const adler = adler32(rawBytes);
+      parts.push(new Uint8Array([
+        (adler >>> 24) & 0xff,
+        (adler >>> 16) & 0xff,
+        (adler >>> 8) & 0xff,
+        adler & 0xff
+      ]));
+
+      const totalLen = parts.reduce((s, p) => s + p.length, 0);
+      const out = new Uint8Array(totalLen);
+      let pos = 0;
+      for (const p of parts) {
+        out.set(p, pos);
+        pos += p.length;
+      }
+      return out;
+    }
+
+    function renderTextLabelBitmap360Dpi(text, maxWidthMm, fontPt, bold = true) {
+      const dpi = 360;
       const pxPerMm = dpi / 25.4;
-      const canvasW = Math.max(1, Math.round(wMm * pxPerMm));
-      const canvasH = Math.max(1, Math.round(hMm * pxPerMm));
-
+      const fontPx = Math.max(10, Math.round((fontPt * 72 / 25.4) * pxPerMm / 2.8346));
       const canvas = document.createElement('canvas');
-      canvas.width = canvasW;
-      canvas.height = canvasH;
       const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvasW, canvasH);
 
-      let hasAlpha = false;
-      const maxW = Math.max(10, (wMm - 2.4) * pxPerMm);
+      const fontSpec = `${bold ? '700' : '600'} ${fontPx}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif`;
+      ctx.font = fontSpec;
 
-      if (markerText) {
-        const fontPx = Math.max(8, (6.2 / 72) * 25.4 * pxPerMm);
-        ctx.font = `700 ${fontPx.toFixed(1)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif`;
-        ctx.fillStyle = '#000000';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(String(markerText), canvasW / 2, topMarkerYMm * pxPerMm, maxW);
-        hasAlpha = true;
+      let displayText = String(text || '').trim();
+      const maxPx = Math.max(24, Math.floor(maxWidthMm * pxPerMm));
+      if (ctx.measureText(displayText).width > maxPx) {
+        while (displayText.length > 1 && ctx.measureText(displayText + '…').width > maxPx) {
+          displayText = displayText.slice(0, -1);
+        }
+        displayText += '…';
       }
 
-      if (bottomLabel) {
-        const ptSize = isTitle ? 5.6 : 4.8;
-        const weight = isTitle ? '600' : '400';
-        const fontPx = Math.max(8, (ptSize / 72) * 25.4 * pxPerMm);
-        ctx.font = `${weight} ${fontPx.toFixed(1)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif`;
-        ctx.fillStyle = '#000000';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(String(bottomLabel), canvasW / 2, bottomTextYMm * pxPerMm, maxW);
-        hasAlpha = true;
+      const metrics = ctx.measureText(displayText);
+      const textW = Math.max(8, Math.ceil(metrics.width + fontPx * 0.25));
+      const textH = Math.max(12, Math.ceil(fontPx * 1.32));
+
+      canvas.width = textW;
+      canvas.height = textH;
+
+      const ctx2 = canvas.getContext('2d');
+      ctx2.clearRect(0, 0, textW, textH);
+      ctx2.font = fontSpec;
+      ctx2.fillStyle = '#000000';
+      ctx2.textBaseline = 'middle';
+      ctx2.textAlign = 'center';
+      ctx2.fillText(displayText, textW / 2, textH / 2 + fontPx * 0.04);
+
+      const imgData = ctx2.getImageData(0, 0, textW, textH).data;
+      const rgbRaw = new Uint8Array(textW * textH * 3);
+      const alphaRaw = new Uint8Array(textW * textH);
+
+      for (let i = 0, p = 0; i < imgData.length; i += 4, p++) {
+        rgbRaw[i] = 0;
+        rgbRaw[i + 1] = 0;
+        rgbRaw[i + 2] = 0;
+        alphaRaw[p] = imgData[i + 3];
       }
 
-      if (!hasAlpha) return null;
-
-      const rgba = ctx.getImageData(0, 0, canvasW, canvasH).data;
-      const totalPx = canvasW * canvasH;
-      const rgbBytes = new Uint8Array(totalPx * 3);
-      const alphaBytes = new Uint8Array(totalPx);
-      let anyNonZero = false;
-
-      for (let p = 0, rIdx = 0; p < totalPx; p++, rIdx += 4) {
-        rgbBytes[p * 3] = rgba[rIdx];
-        rgbBytes[p * 3 + 1] = rgba[rIdx + 1];
-        rgbBytes[p * 3 + 2] = rgba[rIdx + 2];
-        const a = rgba[rIdx + 3];
-        alphaBytes[p] = a;
-        if (a > 0) anyNonZero = true;
-      }
-
-      if (!anyNonZero) return null;
-      return { width: canvasW, height: canvasH, rgbBytes, alphaBytes };
+      return {
+        width: textW,
+        height: textH,
+        rgbZlib: zlibStoreCompress(rgbRaw),
+        alphaZlib: zlibStoreCompress(alphaRaw),
+        widthMm: textW / pxPerMm,
+        heightMm: textH / pxPerMm
+      };
     }
 
-    async function downloadLabelsPdf43x25() {
+    function downloadLabelsPdf43x25() {
       if (!lastRenderedCardsData.length) {
         renderAll();
       }
@@ -1889,8 +1932,6 @@
         setBanner('Нет сгенерированных этикеток для экспорта в PDF.', 'warn');
         return;
       }
-
-      setBanner(`Формируем PDF (${lastRenderedCardsData.length} этикеток)...`);
 
       const wMm = Math.max(15, Number(document.getElementById('labelWidthMm').value) || 43);
       const hMm = Math.max(10, Number(document.getElementById('labelHeightMm').value) || 25);
@@ -1905,6 +1946,36 @@
       const shiftXPt = mmToPt(oxMm);
       const shiftYPt = mmToPt(oyMm);
 
+      // Кэш повторяющихся подписей (360 DPI + FlateDecode + /SMask)
+      const captionCache = new Map();
+      function getOrCreateCaptionXObject(text, maxWidthMm, fontPt, bold) {
+        const key = `${bold ? 'B' : 'R'}|${fontPt}|${maxWidthMm.toFixed(2)}|${text}`;
+        if (captionCache.has(key)) {
+          return captionCache.get(key);
+        }
+
+        const bmp = renderTextLabelBitmap360Dpi(text, maxWidthMm, fontPt, bold);
+        const smaskId = addObj(
+          `<< /Type /XObject /Subtype /Image /Width ${bmp.width} /Height ${bmp.height} /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /FlateDecode /Length ${bmp.alphaZlib.length} >>\nstream\n`
+        );
+        objects[smaskId - 1] = { binHeader: `<< /Type /XObject /Subtype /Image /Width ${bmp.width} /Height ${bmp.height} /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /FlateDecode /Length ${bmp.alphaZlib.length} >>\nstream\n`, data: bmp.alphaZlib, binFooter: `\nendstream` };
+
+        const imgId = addObj('');
+        objects[imgId - 1] = {
+          binHeader: `<< /Type /XObject /Subtype /Image /Width ${bmp.width} /Height ${bmp.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /SMask ${smaskId} 0 R /Filter /FlateDecode /Length ${bmp.rgbZlib.length} >>\nstream\n`,
+          data: bmp.rgbZlib,
+          binFooter: `\nendstream`
+        };
+
+        const entry = {
+          xobjId: imgId,
+          wPt: mmToPt(bmp.widthMm),
+          hPt: mmToPt(bmp.heightMm)
+        };
+        captionCache.set(key, entry);
+        return entry;
+      }
+
       const objects = [];
       const addObj = (body) => {
         objects.push(body);
@@ -1914,14 +1985,7 @@
       const catalogId = addObj('');
       const pagesId = addObj('');
       const pageIds = [];
-
-      const matrixTopMm = Math.max(0.8, (hMm - mMm) / 2 - oyMm);
-      const matrixBottomMm = Math.min(hMm - 0.8, (hMm + mMm) / 2 - oyMm);
-      const topMarkerYMm = Math.max(1.4, matrixTopMm * 0.52);
-      const bottomTextYMm = Math.min(hMm - 1.4, matrixBottomMm + (hMm - matrixBottomMm) * 0.52);
-
-      // Кэшируем готовые PDF XObject-ы по ключу текста, чтобы не дублировать одинаковые подписи
-      const xobjCache = new Map();
+      const maxCaptionWidthMm = Math.max(10, wMm - 3);
 
       for (const item of lastRenderedCardsData) {
         const { res, markerText, productTitle, rawText } = item;
@@ -1934,7 +1998,7 @@
         const streamCmds = [];
         streamCmds.push('0 0 0 rg');
 
-        // 1. Векторные модули DataMatrix ECC200
+        // Чёткий векторный DataMatrix ECC200
         for (let r = 0; r < rows; r++) {
           for (let c = 0; c < cols; c++) {
             if (res.matrix[r][c] === 1) {
@@ -1947,57 +2011,40 @@
           }
         }
 
-        // 2. Текстовый слой с поддержкой кириллицы
-        const bottomLabel = productTitle || rawText || '';
-        const isTitle = Boolean(productTitle);
-        const cacheKey = `${wMm}x${hMm}|${topMarkerYMm.toFixed(2)}|${bottomTextYMm.toFixed(2)}|${markerText}||${bottomLabel}||${isTitle ? 1 : 0}`;
+        const pageXObjects = [];
 
-        let xobjId = xobjCache.get(cacheKey);
-        if (!xobjId && (markerText || bottomLabel)) {
-          const overlay = buildTextOverlayRgbaAlpha(
-            markerText,
-            bottomLabel,
-            isTitle,
-            wMm,
-            hMm,
-            topMarkerYMm,
-            bottomTextYMm,
-            360
-          );
-          if (overlay) {
-            const [rgbDef, alphaDef] = await Promise.all([
-              deflateBytesIfSupported(overlay.rgbBytes),
-              deflateBytesIfSupported(overlay.alphaBytes)
-            ]);
-            const rgbFilter = rgbDef.compressed ? ' /Filter /FlateDecode' : '';
-            const alphaFilter = alphaDef.compressed ? ' /Filter /FlateDecode' : '';
-
-            const smaskId = addObj({
-              dict: `<< /Type /XObject /Subtype /Image /Width ${overlay.width} /Height ${overlay.height} /ColorSpace /DeviceGray /BitsPerComponent 8${alphaFilter} /Length ${alphaDef.bytes.length} >>`,
-              rawBytes: alphaDef.bytes
-            });
-            xobjId = addObj({
-              dict: `<< /Type /XObject /Subtype /Image /Width ${overlay.width} /Height ${overlay.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /SMask ${smaskId} 0 R${rgbFilter} /Length ${rgbDef.bytes.length} >>`,
-              rawBytes: rgbDef.bytes
-            });
-            xobjCache.set(cacheKey, xobjId);
-          }
+        if (markerText) {
+          const cap = getOrCreateCaptionXObject(markerText, maxCaptionWidthMm, 6.2, true);
+          const xName = `ImM${cap.xobjId}`;
+          pageXObjects.push(`/${xName} ${cap.xobjId} 0 R`);
+          const ix = ((pageW - cap.wPt) / 2 + shiftXPt).toFixed(3);
+          const iy = (pageH - cap.hPt - mmToPt(0.7) - shiftYPt).toFixed(3);
+          streamCmds.push(`q ${cap.wPt.toFixed(3)} 0 0 ${cap.hPt.toFixed(3)} ${ix} ${iy} cm /${xName} Do Q`);
         }
 
-        let resourcesDict = '<< >>';
-        if (xobjId) {
-          resourcesDict = `<< /XObject << /ImTxt ${xobjId} 0 R >> >>`;
-          streamCmds.push(`q ${pageW.toFixed(3)} 0 0 ${pageH.toFixed(3)} 0 0 cm /ImTxt Do Q`);
+        const bottomCaption = productTitle || rawText || '';
+        if (bottomCaption) {
+          const cap = getOrCreateCaptionXObject(bottomCaption, maxCaptionWidthMm, productTitle ? 5.6 : 5.0, Boolean(productTitle));
+          const xName = `ImB${cap.xobjId}`;
+          pageXObjects.push(`/${xName} ${cap.xobjId} 0 R`);
+          const ix = ((pageW - cap.wPt) / 2 + shiftXPt).toFixed(3);
+          const iy = (mmToPt(0.7) - shiftYPt).toFixed(3);
+          streamCmds.push(`q ${cap.wPt.toFixed(3)} 0 0 ${cap.hPt.toFixed(3)} ${ix} ${iy} cm /${xName} Do Q`);
         }
 
-        const contentStr = streamCmds.join('
-');
+        const contentStr = streamCmds.join('\n');
         const contentBytes = new TextEncoder().encode(contentStr);
-        const contentId = addObj({
-          dict: `<< /Length ${contentBytes.length} >>`,
-          rawBytes: contentBytes
-        });
-        const pageId = addObj(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${pageW.toFixed(3)} ${pageH.toFixed(3)}] /Resources ${resourcesDict} /Contents ${contentId} 0 R >>`);
+        const contentId = addObj('');
+        objects[contentId - 1] = {
+          binHeader: `<< /Length ${contentBytes.length} >>\nstream\n`,
+          data: contentBytes,
+          binFooter: `\nendstream`
+        };
+
+        const xobjRes = pageXObjects.length ? ` /XObject << ${pageXObjects.join(' ')} >>` : '';
+        const pageId = addObj(
+          `<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${pageW.toFixed(3)} ${pageH.toFixed(3)}] /Resources <<${xobjRes} >> /Contents ${contentId} 0 R >>`
+        );
         pageIds.push(pageId);
       }
 
@@ -2006,67 +2053,49 @@
 
       const enc = new TextEncoder();
       const chunks = [];
-      let byteLen = 0;
-      const pushStr = (s) => {
-        const b = enc.encode(s);
-        chunks.push(b);
-        byteLen += b.length;
-      };
-      const pushBytes = (b) => {
-        chunks.push(b);
-        byteLen += b.length;
-      };
-
-      pushStr('%PDF-1.4
-');
       const offsets = [0];
+      let curOffset = 0;
+
+      const pushText = (str) => {
+        const b = enc.encode(str);
+        chunks.push(b);
+        curOffset += b.length;
+      };
+
+      pushText('%PDF-1.4\n');
       for (let i = 0; i < objects.length; i++) {
-        offsets.push(byteLen);
+        offsets.push(curOffset);
+        pushText(`${i + 1} 0 obj\n`);
         const obj = objects[i];
-        pushStr(`${i + 1} 0 obj
-`);
         if (typeof obj === 'string') {
-          pushStr(`${obj}
-endobj
-`);
+          pushText(obj);
         } else {
-          pushStr(`${obj.dict}
-stream
-`);
-          pushBytes(obj.rawBytes);
-          pushStr(`
-endstream
-endobj
-`);
+          pushText(obj.binHeader);
+          chunks.push(obj.data);
+          curOffset += obj.data.length;
+          pushText(obj.binFooter);
         }
+        pushText('\nendobj\n');
       }
 
-      const xrefOffset = byteLen;
-      pushStr(`xref
-0 ${objects.length + 1}
-`);
-      pushStr('0000000000 65535 f 
-');
+      const xrefOffset = curOffset;
+      pushText(`xref\n0 ${objects.length + 1}\n`);
+      pushText('0000000000 65535 f \n');
       for (let i = 1; i <= objects.length; i++) {
-        pushStr(`${String(offsets[i]).padStart(10, '0')} 00000 n 
-`);
+        pushText(`${String(offsets[i]).padStart(10, '0')} 00000 n \n`);
       }
-      pushStr(`trailer
-<< /Size ${objects.length + 1} /Root ${catalogId} 0 R >>
-startxref
-${xrefOffset}
-%%EOF`);
+      pushText(`trailer\n<< /Size ${objects.length + 1} /Root ${catalogId} 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`);
 
       const blob = new Blob(chunks, { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `matrix_labels_${wMm}x${hMm}mm.pdf`;
+      a.download = `matrix_labels_${wMm}x${hMm}mm_v8.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-      setBanner(`Сформирован PDF-файл (${wMm}×${hMm} мм, страниц: ${pageIds.length}).`, 'success');
+      setBanner(`Сформирован PDF-файл (${wMm}×${hMm} мм, страниц: ${pageIds.length}, подписей в кэше: ${captionCache.size}).`, 'success');
     }
 
     /* ================= Загрузка ZIP и таблиц как в Project Agregator ================= */
@@ -2169,8 +2198,6 @@ ${xrefOffset}
         }
         if (rowCodes.length === 0) continue;
 
-        // Если в левом столбце компактная строка SSCC (например, 00... или (00)...),
-        // она надёжно идентифицирует короб даже при любой цифре расширения.
         if (firstCellSscc && firstCellStr.length <= 24) {
           found.push(firstCellSscc);
           continue;
