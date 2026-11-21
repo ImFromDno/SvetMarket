@@ -159,4 +159,404 @@
       outline: none;
     }
 
-    input:
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      margin-top: 14px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .badge-hint {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .file-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .file-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface-alt);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .file-btn:hover {
+      border-color: var(--accent);
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .status-text {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .result-box {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 14px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+    }
+
+    .result-main {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .result-count {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .result-meta {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .luminaire-list {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .luminaire-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .site-footer {
+      margin-top: 20px;
+    }
+
+    @media (max-width: 540px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .ts-lumen-bar {
+        padding: 12px 16px;
+        gap: 10px;
+      }
+
+      .ts-lumen-brand {
+        font-size: 19px;
+      }
+
+      .ts-lumen-divider {
+        height: 20px;
+      }
+
+      .ts-lumen-project {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-controls">
+      <button type="button" class="theme-btn" id="themeToggle">Тёмная тема</button>
+    </div>
+
+    <header class="ts-lumen-bar" role="banner" aria-label="Tom Studio — Project Lumen">
+      <span class="ts-lumen-brand">Tom Studio</span>
+      <span class="ts-lumen-divider" aria-hidden="true"></span>
+      <span class="ts-lumen-project">Project Lumen</span>
+    </header>
+
+    <main class="card">
+      <div class="grid-2">
+        <div class="field">
+          <label for="lengthInput">Длина, м</label>
+          <input type="number" id="lengthInput" min="0.5" step="0.1" value="6" />
+        </div>
+        <div class="field">
+          <label for="widthInput">Ширина, м</label>
+          <input type="number" id="widthInput" min="0.5" step="0.1" value="4" />
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="zoneSelect">Назначение зоны</label>
+          <select id="zoneSelect">
+            <option value="150" data-wet="false">Жилая / офис (150 лк)</option>
+            <option value="150" data-wet="true">Санузел / влажная зона (150 лк)</option>
+            <option value="200" data-wet="false">Склад / мастерская (200 лк)</option>
+            <option value="300" data-wet="false">Торговый зал / кабинет (300 лк)</option>
+            <option value="400" data-wet="true">Автомойка (400 лк)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="luminaireSelect">Светильник</label>
+          <select id="luminaireSelect"></select>
+        </div>
+      </div>
+
+      <div class="checkbox-row">
+        <label class="checkbox-label" for="ip65Only">
+          <input type="checkbox" id="ip65Only" />
+          <span>Только с защитой от влаги и пыли (IP65+)</span>
+        </label>
+        <span class="badge-hint" id="ip65Hint">Авто для влажных зон</span>
+      </div>
+
+      <div class="file-row">
+        <label class="file-btn" for="fileInput">Загрузить luminaires.txt</label>
+        <input type="file" id="fileInput" accept=".txt,text/plain" />
+        <span class="status-text" id="sourceStatus">Встроенный список светильников (коэффициент 1.5)</span>
+      </div>
+
+      <section class="result-box" aria-live="polite">
+        <div class="result-main">
+          <div>
+            <div class="badge-hint">Рекомендуемое количество (чётное, в большую сторону)</div>
+            <div class="result-count" id="resultCount">4 шт.</div>
+          </div>
+          <div class="badge-hint" id="resultArea">Площадь: 24.0 м²</div>
+        </div>
+        <div class="result-meta" id="resultDetails"></div>
+        <div class="luminaire-list" id="luminaireList"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer ts-lumen-bar" aria-label="Tom Studio — Project Lumen">
+      <span class="ts-lumen-brand">Tom Studio</span>
+      <span class="ts-lumen-divider" aria-hidden="true"></span>
+      <span class="ts-lumen-project">Project Lumen</span>
+    </footer>
+  </div>
+
+  <script>
+    const ENV_FACTOR = 1.5;
+
+    const DEFAULT_LUMINAIRES = [
+      { name: "СПО 36Вт 4000K IP20", lumens: 3600, ip: 20 },
+      { name: "ДПО 10 4х8 40Вт IP65", lumens: 4200, ip: 65 },
+      { name: "Линейный LED 50Вт IP65", lumens: 5500, ip: 65 },
+      { name: "Панель 600х600 40Вт IP40", lumens: 4000, ip: 40 },
+      { name: "Промышленный LED 80Вт IP65", lumens: 9200, ip: 65 }
+    ];
+
+    let luminaires = [...DEFAULT_LUMINAIRES];
+
+    const lengthInput = document.getElementById("lengthInput");
+    const widthInput = document.getElementById("widthInput");
+    const zoneSelect = document.getElementById("zoneSelect");
+    const luminaireSelect = document.getElementById("luminaireSelect");
+    const ip65Only = document.getElementById("ip65Only");
+    const ip65Hint = document.getElementById("ip65Hint");
+    const fileInput = document.getElementById("fileInput");
+    const sourceStatus = document.getElementById("sourceStatus");
+    const resultCount = document.getElementById("resultCount");
+    const resultArea = document.getElementById("resultArea");
+    const resultDetails = document.getElementById("resultDetails");
+    const luminaireList = document.getElementById("luminaireList");
+    const themeToggle = document.getElementById("themeToggle");
+
+    function roundUpEven(value) {
+      const ceilVal = Math.max(2, Math.ceil(value));
+      return ceilVal % 2 === 0 ? ceilVal : ceilVal + 1;
+    }
+
+    function parseLuminairesText(text) {
+      const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+      const parsed = [];
+
+      for (const line of lines) {
+        if (line.startsWith("#")) continue;
+        const parts = line.split(/[;|]/).map((p) => p.trim());
+        if (parts.length >= 2) {
+          const name = parts[0];
+          const lumens = parseFloat(parts[1].replace(",", "."));
+          const ipMatch = (parts[2] || "").match(/\d+/);
+          const ip = ipMatch ? parseInt(ipMatch[0], 10) : 20;
+          if (name && !Number.isNaN(lumens) && lumens > 0) {
+            parsed.push({ name, lumens, ip });
+          }
+        }
+      }
+
+      return parsed;
+    }
+
+    function getFilteredLuminaires() {
+      const onlyIp65 = ip65Only.checked;
+      const filtered = onlyIp65 ? luminaires.filter((item) => item.ip >= 65) : luminaires;
+      return filtered.length ? filtered : luminaires;
+    }
+
+    function populateLuminaireSelect() {
+      const prevValue = luminaireSelect.value;
+      const items = getFilteredLuminaires();
+
+      luminaireSelect.innerHTML = "";
+      items.forEach((item, idx) => {
+        const option = document.createElement("option");
+        option.value = String(idx);
+        option.textContent = `${item.name} — ${item.lumens} лм (IP${item.ip})`;
+        luminaireSelect.appendChild(option);
+      });
+
+      const matchingIndex = items.findIndex((item) => `${item.name}|${item.lumens}|${item.ip}` === prevValue);
+      if (matchingIndex >= 0) {
+        luminaireSelect.value = String(matchingIndex);
+      }
+      Array.from(luminaireSelect.options).forEach((opt, idx) => {
+        const item = items[idx];
+        opt.dataset.key = `${item.name}|${item.lumens}|${item.ip}`;
+      });
+    }
+
+    function calculate() {
+      const length = Math.max(0.1, parseFloat(lengthInput.value) || 0);
+      const width = Math.max(0.1, parseFloat(widthInput.value) || 0);
+      const area = length * width;
+      const lux = parseFloat(zoneSelect.value) || 150;
+      const requiredLumens = area * lux * ENV_FACTOR;
+
+      const items = getFilteredLuminaires();
+      const selectedIdx = Math.min(Math.max(0, parseInt(luminaireSelect.value, 10) || 0), items.length - 1);
+      const selected = items[selectedIdx] || DEFAULT_LUMINAIRES[0];
+
+      const rawCount = requiredLumens / selected.lumens;
+      const finalCount = roundUpEven(rawCount);
+
+      resultCount.textContent = `${finalCount} шт.`;
+      resultArea.textContent = `Площадь: ${area.toFixed(1)} м²`;
+      resultDetails.textContent =
+        `Норма: ${lux} лк · Коэффициент: ${ENV_FACTOR} · Требуется: ${Math.round(requiredLumens).toLocaleString("ru-RU")} лм · Расчёт: ${rawCount.toFixed(2)} шт. → ${finalCount} шт.`;
+
+      luminaireList.innerHTML = "";
+      items.forEach((item) => {
+        const countForItem = roundUpEven(requiredLumens / item.lumens);
+        const row = document.createElement("div");
+        row.className = "luminaire-item";
+        row.innerHTML = `
+          <span><strong>${item.name}</strong> <span class="badge-hint">(IP${item.ip}, ${item.lumens} лм)</span></span>
+          <strong>${countForItem} шт.</strong>
+        `;
+        luminaireList.appendChild(row);
+      });
+    }
+
+    zoneSelect.addEventListener("change", () => {
+      const selectedOption = zoneSelect.options[zoneSelect.selectedIndex];
+      const isWet = selectedOption && selectedOption.dataset.wet === "true";
+      if (isWet) {
+        ip65Only.checked = true;
+        ip65Hint.textContent = "Включено для влажной зоны";
+      } else {
+        ip65Hint.textContent = "Авто для влажных зон";
+      }
+      populateLuminaireSelect();
+      calculate();
+    });
+
+    ip65Only.addEventListener("change", () => {
+      populateLuminaireSelect();
+      calculate();
+    });
+
+    lengthInput.addEventListener("input", calculate);
+    widthInput.addEventListener("input", calculate);
+    luminaireSelect.addEventListener("change", calculate);
+
+    fileInput.addEventListener("change", (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = String((e.target && e.target.result) || "");
+        const parsed = parseLuminairesText(text);
+        if (parsed.length > 0) {
+          luminaires = parsed;
+          sourceStatus.textContent = `Загружен ${file.name} (${parsed.length} поз.)`;
+        } else {
+          sourceStatus.textContent = `Не удалось прочитать позиции из ${file.name}`;
+        }
+        populateLuminaireSelect();
+        calculate();
+      };
+      reader.readAsText(file, "utf-8");
+    });
+
+    themeToggle.addEventListener("click", () => {
+      const isDark = document.body.getAttribute("data-theme") === "dark";
+      if (isDark) {
+        document.body.removeAttribute("data-theme");
+        themeToggle.textContent = "Тёмная тема";
+      } else {
+        document.body.setAttribute("data-theme", "dark");
+        themeToggle.textContent = "Светлая тема";
+      }
+    });
+
+    populateLuminaireSelect();
+    calculate();
+  </script>
+</body>
+</html>
